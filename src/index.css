@@ -1,7 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Press Start 2P', monospace;
-  background: #1a7a1a url('/pitch.png') center center / cover no-repeat;
+  background: #0a0a1a url('/pitch.png') center center / cover no-repeat fixed;
   color: #ffffff;
   min-height: 100vh;
   font-size: 12px;
