@@ -4,6 +4,7 @@ import { useGame } from '../context/GameContext'
 import { fetchRoundEvents, matchFixtures } from '../data/football'
 import { scoringMessage } from '../data/scoring'
 import { friendlyError } from '../supabase'
+import AdminPlayerPicks from '../components/AdminPlayerPicks'
 
 export default function Admin() {
   const game = useGame()
@@ -167,6 +168,7 @@ export default function Admin() {
 
   return (
     <div>
+      <AdminPlayerPicks />
       <section className="card">
         <p className="eyebrow">Admin</p>
         <h1>Final scores</h1>

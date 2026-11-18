@@ -84,6 +84,26 @@ test('drafts stay private and a second calculate does not double points', () => 
   assert.equal(store.loadGame(sam.token).me.points, total + 3)
 })
 
+test('an admin can lock picks for another player and a player cannot', () => {
+  const store = createStore()
+  const sam = store.login('Sam Walker', 'office')
+  const saj = store.login('Saj Ali', 'office')
+  assert.throws(() => store.adminSavePlayerPredictions(saj.token, 'sam', [{ fixtureId: 3, score: '1-0' }], true), /admin/i)
+  store.adminSavePlayerPredictions(sam.token, 'saj', [
+    { fixtureId: 3, score: '2-0' },
+    { fixtureId: 4, score: '1-1' },
+    { fixtureId: 9, score: '0-1' },
+  ], true)
+  const seen = store.loadGame(sam.token)
+  const sajPicks = seen.publishedPicks.filter((pick) => pick.userId === 'saj')
+  assert.equal(sajPicks.length, 3)
+  assert.equal(sajPicks.every((pick) => pick.enteredByAdmin), true)
+  assert.equal(seen.publishedPicks.some((pick) => pick.score === '0-0'), false)
+  store.adminSavePlayerPredictions(sam.token, 'saj', [{ fixtureId: 3, score: '3-0' }], true)
+  const updated = store.loadGame(saj.token).publishedPicks.find((pick) => pick.userId === 'saj' && pick.fixtureId === 3)
+  assert.equal(updated.score, '3-0')
+})
+
 test('a non-admin cannot calculate points', () => {
   const store = createStore()
   const saj = store.login('Saj Ali', 'office')

@@ -144,6 +144,8 @@ export function GameProvider({ children }) {
       adminCalculate: (week) => run(() => api.adminCalculate(tokenRef.current, week)),
       adminSaveFixture: (fixture) => run(() => api.adminSaveFixture(tokenRef.current, fixture)),
       adminSetWeek: (week) => run(() => api.adminSetWeek(tokenRef.current, week)),
+      adminLoadPlayerPredictions: (userId) => api.adminLoadPlayerPredictions(tokenRef.current, userId),
+      adminSavePlayerPredictions: (userId, scores, lock) => run(() => api.adminSavePlayerPredictions(tokenRef.current, userId, scores, lock)),
     }
   }, [data, ready, loading, error, refresh, login, logout, run])
 

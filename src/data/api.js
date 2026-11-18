@@ -99,6 +99,21 @@ export async function adminSetWeek(token, week) {
   return rpc('admin_set_week', { p_token: token, p_week: week })
 }
 
+export async function adminLoadPlayerPredictions(token, userId) {
+  if (mockMode) return callMock('adminLoadPlayerPredictions', [token, userId])
+  return rpc('admin_load_player_predictions', { p_token: token, p_user_id: userId })
+}
+
+export async function adminSavePlayerPredictions(token, userId, scores, lock) {
+  if (mockMode) return callMock('adminSavePlayerPredictions', [token, userId, scores, lock])
+  return rpc('admin_save_player_predictions', {
+    p_token: token,
+    p_user_id: userId,
+    p_scores: scores,
+    p_lock: lock,
+  })
+}
+
 export function subscribe(onChange) {
   if (mockMode) return getMock().subscribe(onChange)
   const channel = supabase
