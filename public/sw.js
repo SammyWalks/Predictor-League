@@ -1,4 +1,4 @@
-const CACHE = 'predictor-shell-v3'
+const CACHE = 'predictor-shell-v4'
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/img/ball.png', '/favicon-32.png', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {

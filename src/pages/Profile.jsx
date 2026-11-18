@@ -87,22 +87,20 @@ export default function Profile() {
           <input value={name} onChange={(event) => setName(event.target.value)} />
         </label>
         <div className="kit-colours">
-          <label>
-            Name colour
-            <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} />
-          </label>
-          <label>
-            Shirt
-            <input type="color" value={kitShirt} onChange={(event) => setKitShirt(event.target.value)} />
-          </label>
-          <label>
-            Shorts
-            <input type="color" value={kitShorts} onChange={(event) => setKitShorts(event.target.value)} />
-          </label>
-          <label>
-            Socks
-            <input type="color" value={kitSocks} onChange={(event) => setKitSocks(event.target.value)} />
-          </label>
+          {[
+            ['Name colour', colour, setColour],
+            ['Shirt', kitShirt, setKitShirt],
+            ['Shorts', kitShorts, setKitShorts],
+            ['Socks', kitSocks, setKitSocks],
+          ].map(([label, value, setValue]) => (
+            <label key={label} className="swatch-row">
+              <span>{label}</span>
+              <span className="swatch-control">
+                <input type="color" value={String(value).toLowerCase()} aria-label={label} onChange={(event) => setValue(event.target.value)} />
+                <span className="swatch-hex">{value.toLowerCase()}</span>
+              </span>
+            </label>
+          ))}
         </div>
         <button className="btn" type="submit" disabled={busy}>Save profile</button>
       </form>
