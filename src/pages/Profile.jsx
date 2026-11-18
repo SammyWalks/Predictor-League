@@ -8,7 +8,7 @@ import Sprite, { KITS } from '../components/Sprite'
 import XpBar from '../components/XpBar'
 
 export default function Profile() {
-  const { me, players, allPicks, updateProfile, changePassword, logout } = useGame()
+  const { me, players, allPicks, updateProfile, changePassword } = useGame()
   const gamePlayers = players
   const gamePicks = allPicks
   const [name, setName] = useState(me.name)
@@ -111,7 +111,6 @@ export default function Profile() {
       {message && <p className="note" role="status">{message}</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
       {me.isAdmin && <p className="hint"><a href="/admin">Open the admin screen</a></p>}
-      <button type="button" className="btn secondary logout-mobile" onClick={logout}>Log out</button>
     </div>
   )
 }

@@ -5,6 +5,8 @@
 --
 -- The original notes are below. Running this file again only inserts players
 -- that are not already there. It does not contain Kieran Savage.
+-- New players belong in supabase/migrations. Karolina is also inserted by
+-- 20261118190000_add_karolina.sql, which will not overwrite an existing row.
 
 create table if not exists users (
   id text primary key,
@@ -37,5 +39,6 @@ insert into users (id, name, colour, password, points, wildcard) values
 ('morrell', 'Sam Morrell', '#10b981', 'office', 21, false),
 ('matthew', 'Matthew Iles', '#8b5cf6', 'office', 20, false),
 ('annabel', 'Annabel', '#ec4899', 'office', 0, true),
-('sophie', 'Sophie', '#06b6d4', 'office', 0, true)
+('sophie', 'Sophie', '#06b6d4', 'office', 0, true),
+('karolina', 'Karolina Bersadska', '#f97316', 'office', 0, false)
 on conflict (id) do nothing;
