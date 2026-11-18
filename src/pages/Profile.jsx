@@ -6,6 +6,7 @@ import Badges from '../components/Badges'
 import Ball from '../components/Ball'
 import Sprite, { KITS } from '../components/Sprite'
 import XpBar from '../components/XpBar'
+import { h2hLabel } from '../data/h2h'
 
 export default function Profile() {
   const { me, players, allPicks, updateProfile, changePassword } = useGame()
@@ -66,6 +67,7 @@ export default function Profile() {
       <h1><Ball />Edit profile</h1>
       <Badges badges={badgesFor(me, gamePlayers, gamePicks)} />
       <XpBar points={me.points} />
+      <p className="h2h-record">Head to head {h2hLabel(me.h2h)}</p>
       <p className="lede">Build your kit. This little player is your icon.</p>
       <div className="kit-preview">
         <Sprite kit={sprite} colour={colour} shirt={kitShirt} shorts={kitShorts} socks={kitSocks} size={64} />

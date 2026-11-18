@@ -18,6 +18,8 @@ export default function Results() {
           players={game.players}
           publishedPicks={game.publishedPicks}
           entries={game.entries}
+          weekAllFixtures={game.weekAllFixtures}
+          week={game.currentWeek}
         />
       ) : (
         <PicksHidden />

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import * as api from '../data/api'
+import { playableFixtures } from '../data/round'
 import { loadToken, saveToken } from '../data/session'
 import { friendlyError } from '../supabase'
 
@@ -115,7 +116,8 @@ export function GameProvider({ children }) {
     const entries = allEntries.filter((entry) => entry.week === currentWeek)
     const myPredictions = (data?.myPredictions || []).filter((prediction) => prediction.week === currentWeek)
     const locked = Boolean(me && entries.some((entry) => entry.userId === me.id))
-    const requiredFixtures = fixtures.filter((fixture) => fixture.hardest)
+    const weekAllFixtures = data?.weekAllFixtures || []
+    const requiredFixtures = playableFixtures(fixtures, me?.id, currentWeek, weekAllFixtures)
     const requiredPredictions = myPredictions.filter((prediction) => requiredFixtures.some((fixture) => fixture.id === prediction.fixtureId))
     const mineScored = locked && requiredPredictions.length > 0 && requiredPredictions.every((prediction) => prediction.pointsAwarded != null)
     const minePartial = locked && requiredPredictions.some((prediction) => prediction.pointsAwarded != null) && !mineScored
@@ -136,6 +138,8 @@ export function GameProvider({ children }) {
       publishedPicks,
       picksRevealed,
       revealedWeeks,
+      weekAllFixtures,
+      myRival: data?.myRival || '',
       allEntries,
       entries,
       myPredictions,
@@ -154,6 +158,7 @@ export function GameProvider({ children }) {
       adminSetWeek: (week) => run(() => api.adminSetWeek(tokenRef.current, week)),
       adminLoadPlayerPredictions: (userId) => api.adminLoadPlayerPredictions(tokenRef.current, userId),
       adminSavePlayerPredictions: (userId, scores, lock) => run(() => api.adminSavePlayerPredictions(tokenRef.current, userId, scores, lock)),
+      setRival: (rivalId) => run(() => api.setRival(tokenRef.current, rivalId, currentWeek)),
     }
   }, [data, ready, loading, error, refresh, login, logout, run])
 

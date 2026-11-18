@@ -9,7 +9,9 @@ import PixelArt from '../components/PixelArt'
 import XpBar from '../components/XpBar'
 import Sprite, { kitProps } from '../components/Sprite'
 import PicksHidden from '../components/PicksHidden'
-import { rivalId, setRival, seenAchievements, markAchievement } from '../arcade/settings'
+import { seenAchievements, markAchievement } from '../arcade/settings'
+import { h2hLabel } from '../data/h2h'
+import { firstKickoff } from '../data/extras'
 import { badgesFor } from '../data/extras'
 import { useEffect, useState } from 'react'
 
@@ -17,7 +19,12 @@ export default function Dashboard() {
   const game = useGame()
   const selected = game.fixtures.filter((fixture) => fixture.hardest)
   const trophy = playerOfTheWeek(game.players, game.allPicks, game.currentWeek)
-  const [rival, setRivalState] = useState(rivalId)
+  const [rival, setRivalState] = useState(game.myRival || '')
+  useEffect(() => { setRivalState(game.myRival || '') }, [game.myRival])
+  const rivalLocked = game.locked || (() => {
+    const deadline = firstKickoff(game.fixtures)
+    return Boolean(deadline && deadline <= new Date())
+  })()
   const [toast, setToast] = useState('')
   const [flash, setFlash] = useState(false)
   const others = game.players.filter((player) => player.id !== game.me.id)
@@ -32,6 +39,18 @@ export default function Dashboard() {
     const earned = badgesFor(game.me, game.players, game.allPicks).map((badge) => badge.id)
     const lowest = Math.min(...game.players.map((player) => player.points))
     if (game.me.points === lowest) earned.push('spoon')
+    if (game.myRival && game.picksRevealed) {
+      const mine = game.publishedPicks.filter((pick) => pick.userId === game.me.id && pick.week === game.currentWeek && pick.pointsAwarded != null)
+      const theirs = game.publishedPicks.filter((pick) => pick.userId === game.myRival && pick.week === game.currentWeek && pick.pointsAwarded != null)
+      const minePts = mine.reduce((sum, pick) => sum + pick.pointsAwarded, 0)
+      const theirPts = theirs.reduce((sum, pick) => sum + pick.pointsAwarded, 0)
+      const selected = game.fixtures.filter((fixture) => fixture.hardest)
+      const scored = selected.length > 0 && selected.every((fixture) => fixture.actualHome != null && fixture.actualAway != null)
+      if (scored && minePts > theirPts && !seen.has(`rival-${game.currentWeek}`)) {
+        markAchievement(game.me.id, `rival-${game.currentWeek}`)
+        setToast('Beat your rival')
+      }
+    }
     const fresh = earned.find((id) => !seen.has(id))
     if (!fresh) return
     markAchievement(game.me.id, fresh)
@@ -39,7 +58,7 @@ export default function Dashboard() {
     setToast(labels[fresh] || fresh)
     const timer = setTimeout(() => setToast(''), 2800)
     return () => clearTimeout(timer)
-  }, [game.me, game.players, game.allPicks])
+  }, [game.me, game.players, game.allPicks, game.myRival, game.picksRevealed, game.publishedPicks, game.currentWeek, game.fixtures])
 
   useEffect(() => {
     const exact = game.allPicks.some((pick) => pick.userId === game.me.id && pick.week === game.currentWeek && pick.pointsAwarded === 3)
@@ -93,7 +112,7 @@ export default function Dashboard() {
         <h2>Head to head</h2>
         <label>
           Weekly rival
-          <select value={rival} onChange={(event) => { setRival(event.target.value); setRivalState(event.target.value) }}>
+          <select value={rival} disabled={rivalLocked} onChange={(event) => { const next = event.target.value; setRivalState(next); game.setRival(next).catch(() => setRivalState(game.myRival || '')) }}>
             <option value="">Pick a rival</option>
             {others.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}
           </select>
@@ -106,6 +125,7 @@ export default function Dashboard() {
           </div>
         )}
         {rivalPlayer && !game.picksRevealed && <PicksHidden />}
+        <p className="h2h-record">Head to head {h2hLabel(game.me.h2h)}</p>
         {rivalPlayer && game.picksRevealed && mineWeek.length > 0 && rivalWeek.length > 0 && (
           <p className="note">{myWeekPts === rivalWeekPts ? 'Draw' : myWeekPts > rivalWeekPts ? `${game.me.name} takes the week` : `${rivalPlayer.name} takes the week`}</p>
         )}

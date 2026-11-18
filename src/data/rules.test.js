@@ -8,6 +8,8 @@ import { FIXTURES } from './fixtures.js'
 import { PLAYERS } from './players.js'
 import { createStore } from './mockStore.js'
 import { weekRevealed } from './visibility.js'
+import { teamCode } from './teams.js'
+import { h2hRecord } from './h2h.js'
 import { runScoreTuesday } from '../../netlify/functions/_shared/run-tuesday.js'
 
 test('exact score is 3, right result is 1, wrong result is 0', () => {
@@ -198,11 +200,11 @@ test('other players picks stay hidden until you lock in, the week is scored, or 
   assert.equal(hidden.publishedPicks.some((pick) => pick.userId === 'sam'), false)
   assert.equal(store.loadGame(sam.token).publishedPicks.filter((pick) => pick.userId === 'sam').length, 3)
 
-  store.savePrediction(annabel.token, 3, '1-1')
-  store.savePrediction(annabel.token, 4, '1-1')
-  store.savePrediction(annabel.token, 9, '1-1')
+  store.loadGame(annabel.token).fixtures.forEach((fixture) => {
+    store.savePrediction(annabel.token, fixture.id, '1-1')
+  })
   const ownDraft = store.loadGame(annabel.token)
-  assert.equal(ownDraft.myPredictions[0].score, '1-1')
+  assert.equal(ownDraft.myPredictions.find((pick) => pick.fixtureId === 3).score, '1-1')
   assert.equal(ownDraft.publishedPicks.some((pick) => pick.userId === 'sam'), false)
 
   store.lockPredictions(annabel.token)
@@ -250,6 +252,69 @@ test('other players picks stay hidden until you lock in, the week is scored, or 
   assert.match(sql, /revoke select on public\.published_picks/)
   assert.doesNotMatch(sql, /set points/i)
   assert.equal(weekRevealed({ user: { id: 'a', isAdmin: true }, week: 1, fixtures: [], entries: [] }), true)
+})
+
+test('week 11 joiners can predict every fixture and only those picks score', () => {
+  const store = createStore()
+  const sam = store.login('Sam Walker', 'office')
+  const annabel = store.login('Annabel Mackereth', 'office')
+  for (const fixture of store.loadGame(sam.token).fixtures) {
+    store.adminSaveFixture(sam.token, { ...fixture, kickoffAt: '2099-01-01T12:00:00Z' })
+  }
+  assert.throws(() => store.savePrediction(sam.token, 1, '1-0'), /not in this week/i)
+  store.savePrediction(annabel.token, 1, '2-0')
+  store.loadGame(annabel.token).fixtures.forEach((fixture) => {
+    if (fixture.id !== 1) store.savePrediction(annabel.token, fixture.id, '0-0')
+  })
+  const before = store.loadGame(sam.token).me.points
+  store.lockPredictions(annabel.token)
+  const published = store.loadGame(sam.token).publishedPicks.filter((pick) => pick.userId === 'annabel')
+  assert.equal(published.length, 10)
+  store.adminSaveResult(sam.token, 1, 2, 0)
+  const scored = store.adminCalculate(sam.token, 11)
+  assert.equal(scored.pointsAdded, 3)
+  assert.equal(store.loadGame(annabel.token).me.points, 3)
+  assert.equal(store.loadGame(sam.token).me.points, before)
+  assert.equal(store.loadGame(annabel.token).weekAllFixtures.some((row) => row.userId === 'karolina' && row.week === 11), true)
+  assert.equal(store.loadGame(annabel.token).weekAllFixtures.some((row) => row.userId === 'sam'), false)
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118210000_week_all_fixtures.sql', import.meta.url), 'utf8')
+  assert.match(sql, /week_all_fixtures/)
+  assert.match(sql, /annabel/)
+  assert.match(sql, /karolina/)
+  assert.match(sql, /sophie/)
+  assert.match(sql, /private\.plays_all/)
+  assert.match(sql, /private\.points_for/)
+  assert.doesNotMatch(sql, /update public\.users\s+set\s+points\s*=\s*[0-9]/i)
+})
+
+test('a head to head win is a tally, not league points', () => {
+  const store = createStore()
+  const sam = store.login('Sam Walker', 'office')
+  const saj = store.login('Saj Ali', 'office')
+  for (const fixture of store.loadGame(sam.token).fixtures.filter((item) => item.hardest)) {
+    store.adminSaveFixture(sam.token, { ...fixture, kickoffAt: '2099-01-01T12:00:00Z' })
+  }
+  store.setRival(sam.token, 'saj')
+  assert.throws(() => store.setRival(sam.token, 'sam'), /someone else/i)
+  store.savePrediction(sam.token, 3, '1-0')
+  store.savePrediction(sam.token, 4, '1-0')
+  store.savePrediction(sam.token, 9, '1-0')
+  store.lockPredictions(sam.token)
+  assert.throws(() => store.setRival(sam.token, 'reuben'), /locked/i)
+  const points = store.loadGame(sam.token).me.points
+  for (const id of [3, 4, 9]) store.adminSaveResult(sam.token, id, 1, 0)
+  store.adminCalculate(sam.token, 11)
+  const me = store.loadGame(sam.token).me
+  assert.equal(me.h2h.wins, 1)
+  assert.equal(me.h2h.draws, 0)
+  assert.equal(me.points, points + 9)
+  assert.equal(h2hRecord('saj', [{ userId: 'saj', week: 11, rivalId: 'sam' }], store.loadGame(sam.token).fixtures, store.loadGame(sam.token).publishedPicks).losses, 1)
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118220000_rivalries.sql', import.meta.url), 'utf8')
+  assert.match(sql, /public\.rivalries/)
+  assert.match(sql, /set_rival/)
+  assert.doesNotMatch(sql, /set points\s*=/i)
+  assert.equal(teamCode('Nottm Forest'), 'NFO')
+  assert.equal(teamCode('Man Utd'), 'MUN')
 })
 
 test('kit colours save without sending or clearing an avatar', () => {

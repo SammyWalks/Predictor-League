@@ -11,6 +11,7 @@ import Countdown from '../components/Countdown'
 import Ball from '../components/Ball'
 import PixelArt from '../components/PixelArt'
 import { coin, jingle } from '../arcade/sfx'
+import { playsAll } from '../data/round'
 
 export default function Predictions() {
   const game = useGame()
@@ -96,7 +97,11 @@ export default function Predictions() {
           </div>
           <StatusPill status={game.status} />
         </div>
-        <p className="lede">Predict the selected fixtures. Lock in when you are happy.</p>
+        <p className="lede">
+          {playsAll(game.me.id, game.currentWeek, game.weekAllFixtures)
+            ? 'NEW PLAYER: ALL 10 GAMES. Predict every fixture, then lock in.'
+            : 'Predict the selected fixtures. Lock in when you are happy.'}
+        </p>
         <Countdown fixtures={game.requiredFixtures} />
 
         {game.requiredFixtures.length === 0 && (

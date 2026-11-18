@@ -1,4 +1,5 @@
 import { badgesFor, formFor, movements, pointsBand } from '../data/extras'
+import { h2hLabel } from '../data/h2h'
 import Badges from './Badges'
 import Sprite, { kitProps } from './Sprite'
 
@@ -15,6 +16,7 @@ export default function LeagueTable({ players, picks }) {
             <th>Form</th>
             <th>Week</th>
             <th>Pts</th>
+            <th title="Head to head wins, draws and losses">H2H</th>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +49,7 @@ export default function LeagueTable({ players, picks }) {
                 </td>
                 <td>{player.weekPoints == null ? '–' : player.weekPoints}</td>
                 <td className="points">{player.points}</td>
+                <td title="Wins-draws-losses against a chosen rival">{h2hLabel(player.h2h)}</td>
               </tr>
             ))
           })()}
