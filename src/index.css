@@ -383,19 +383,19 @@ table.league .points { font-weight: 700; }
 .loading-card { text-align: center; font-family: 'Press Start 2P', monospace; font-size: 10px; }
 .loading-card .pixel-ball { width: 64px; height: 64px; margin-bottom: 12px; }
 .pixel-ball, html.crt .pixel-ball {
+  display: inline-block;
   width: 32px;
   height: 32px;
   margin-right: 8px;
-  image-rendering: pixelated;
   background: transparent;
   filter: none;
   opacity: 1;
   border-radius: 0;
   box-shadow: none;
   text-shadow: none;
-  object-fit: fill;
   overflow: visible;
   vertical-align: middle;
+  shape-rendering: crispEdges;
 }
 h1 .pixel-ball, h2 .pixel-ball { width: 32px; height: 32px; }
 .pixel-ball.spin { animation: ball-spin 1.2s linear infinite; }
