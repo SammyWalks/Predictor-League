@@ -1,6 +1,7 @@
 import { PLAYERS } from './players.js'
 import { FIXTURES, CURRENT_WEEK, SEASON, LEAGUE_ID } from './fixtures.js'
 import { formatScore, parseScore, settlePick } from './scoring.js'
+import { firstKickoff } from './extras.js'
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value))
@@ -163,13 +164,17 @@ export function createStore({ demo = false, persist = false } = {}) {
       emit()
     },
     loadGame(token) {
+      autoLock(state)
       return payload(token)
     },
     savePrediction(token, fixtureId, score) {
+      autoLock(state)
       const user = userFromToken(token)
       const fixture = state.fixtures.find((item) => item.id === Number(fixtureId))
       if (!fixture) throw new Error('Fixture not found')
       if (fixture.week !== state.currentWeek) throw new Error('That fixture is not in the current week')
+      const deadline = firstKickoff(state.fixtures.filter((item) => item.week === fixture.week))
+      if (deadline && deadline <= new Date()) throw new Error('The deadline has passed')
       const locked = state.entries.some((entry) => entry.userId === user.id && entry.week === fixture.week)
       if (locked) throw new Error('Predictions are locked for this week')
       if (!fixture.hardest) throw new Error('That fixture is not in this week\'s round')
@@ -286,6 +291,7 @@ export function createStore({ demo = false, persist = false } = {}) {
         home,
         away,
         kickoffLabel: String(fixture.kickoffLabel || '').trim(),
+        kickoffAt: fixture.kickoffAt || existing?.kickoffAt || null,
         hardest: Boolean(fixture.hardest),
         actualHome: existing ? existing.actualHome : null,
         actualAway: existing ? existing.actualAway : null,
@@ -404,6 +410,46 @@ export function createStore({ demo = false, persist = false } = {}) {
       emit()
     },
   }
+}
+
+function autoLock(state, now = new Date()) {
+  const dueWeeks = new Set()
+  state.fixtures.forEach((fixture) => {
+    if (fixture.hardest && fixture.kickoffAt && new Date(fixture.kickoffAt) <= now) dueWeeks.add(fixture.week)
+  })
+  dueWeeks.forEach((week) => {
+    const userIds = new Set(
+      state.predictions
+        .filter((prediction) => !prediction.locked && prediction.week === week)
+        .filter((prediction) => state.fixtures.some((fixture) => fixture.id === prediction.fixtureId && fixture.hardest))
+        .map((prediction) => prediction.userId),
+    )
+    userIds.forEach((userId) => {
+      state.predictions.forEach((prediction) => {
+        const fixture = state.fixtures.find((item) => item.id === prediction.fixtureId)
+        if (prediction.userId === userId && fixture?.week === week && fixture.hardest && !prediction.locked) {
+          prediction.locked = true
+        }
+      })
+      if (!state.entries.some((entry) => entry.userId === userId && entry.week === week)) {
+        state.entries.push({ userId, week, lockedAt: now.toISOString() })
+      }
+      state.predictions
+        .filter((prediction) => prediction.userId === userId && prediction.week === week && prediction.locked)
+        .forEach((prediction) => {
+          if (state.publishedPicks.some((pick) => pick.userId === userId && pick.fixtureId === prediction.fixtureId)) return
+          state.publishedPicks.push({
+            userId,
+            fixtureId: prediction.fixtureId,
+            week,
+            score: prediction.score,
+            pointsAwarded: prediction.pointsAwarded,
+            lockedAt: now.toISOString(),
+            enteredByAdmin: Boolean(prediction.enteredByAdmin),
+          })
+        })
+    })
+  })
 }
 
 function publicUser(user) {

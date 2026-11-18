@@ -125,6 +125,7 @@ export default function Admin() {
         home: fixture.home,
         away: fixture.away,
         kickoffLabel: fixture.kickoffLabel,
+        kickoffAt: fixture.kickoffAt,
         hardest: !fixture.hardest,
       })
       setMessage(fixture.hardest
