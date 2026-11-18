@@ -6,8 +6,8 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
-function requiredFixtures(state, user) {
-  return state.fixtures.filter((fixture) => fixture.week === state.currentWeek && (user.wildcard || fixture.hardest))
+function requiredFixtures(state) {
+  return state.fixtures.filter((fixture) => fixture.week === state.currentWeek && fixture.hardest)
 }
 
 const MOCK_KEY = 'predictor-mock-v1'
@@ -168,7 +168,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       if (fixture.week !== state.currentWeek) throw new Error('That fixture is not in the current week')
       const locked = state.entries.some((entry) => entry.userId === user.id && entry.week === fixture.week)
       if (locked) throw new Error('Predictions are locked for this week')
-      if (!user.wildcard && !fixture.hardest) throw new Error('That fixture is not in your selection')
+      if (!fixture.hardest) throw new Error('That fixture is not in this week\'s round')
       const parsed = parseScore(String(score || ''))
       if (!parsed) throw new Error('Enter a score like 2-1')
       const canonical = formatScore(parsed.home, parsed.away)
@@ -196,7 +196,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       if (state.entries.some((entry) => entry.userId === user.id && entry.week === week)) {
         throw new Error('Predictions are already locked')
       }
-      const required = requiredFixtures(state, user)
+      const required = requiredFixtures(state)
       if (required.length === 0) throw new Error('There are no fixtures to lock')
       const missing = required.filter((fixture) => {
         const prediction = state.predictions.find((item) => item.userId === user.id && item.fixtureId === fixture.id)

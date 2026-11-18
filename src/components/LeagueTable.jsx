@@ -1,4 +1,4 @@
-export default function LeagueTable({ players, publishedPicks, meId }) {
+export default function LeagueTable({ players, publishedPicks }) {
   const rows = [...players]
     .map((player) => {
       const picks = publishedPicks.filter((pick) => pick.userId === player.id)
@@ -21,11 +21,10 @@ export default function LeagueTable({ players, publishedPicks, meId }) {
         </thead>
         <tbody>
           {rows.map((player, index) => (
-            <tr key={player.id} className={player.id === meId ? 'me' : ''} style={{ borderLeft: `6px solid ${player.colour}` }}>
+            <tr key={player.id}>
               <td>{index + 1}</td>
               <td>
-                <span className="player-name" style={{ color: player.colour }}>{player.name}</span>
-                {player.wildcard && <span className="tag">WC</span>}
+                <span className="player-name" style={{ color: player.colour || '#94a3b8' }}>{player.name}</span>
               </td>
               <td>{player.weekPoints == null ? '–' : player.weekPoints}</td>
               <td className="points">{player.points}</td>

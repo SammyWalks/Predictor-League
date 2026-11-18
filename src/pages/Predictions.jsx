@@ -87,24 +87,17 @@ export default function Predictions() {
           </div>
           <StatusPill status={game.status} />
         </div>
-        <p className="lede">
-          {game.me.wildcard
-            ? 'Wildcard: predict all the games this week.'
-            : 'Predict the selected fixtures. Lock in when you are happy.'}
-        </p>
+        <p className="lede">Predict the selected fixtures. Lock in when you are happy.</p>
 
-        {game.requiredFixtures.length === 0 && <p className="empty">No fixtures to predict this week.</p>}
+        {game.requiredFixtures.length === 0 && <p className="empty">No fixtures are selected for this week yet.</p>}
 
         <div className="predict-list">
           {game.requiredFixtures.map((fixture) => (
-            <div key={fixture.id} className="predict-row">
-              <div>
-                <span className="kickoff">{fixture.kickoffLabel}</span>
-                <strong>{fixture.home}</strong>
-                <span className="vs">vs</span>
-                <strong>{fixture.away}</strong>
-              </div>
+            <div key={fixture.id} className="score-line">
+              <span className="kickoff">{fixture.kickoffLabel}</span>
+              <span className="team home">{fixture.home}</span>
               <ScoreInputs score={draft[fixture.id] || ''} onChange={(score) => onScore(fixture.id, score)} disabled={game.locked} />
+              <span className="team away">{fixture.away}</span>
             </div>
           ))}
         </div>
@@ -123,7 +116,7 @@ export default function Predictions() {
       <section className="card">
         <p className="live-label">Live</p>
         <WeekPicks
-          fixtures={game.fixtures}
+          fixtures={game.requiredFixtures}
           players={game.players}
           publishedPicks={game.publishedPicks}
           entries={game.entries}

@@ -8,8 +8,8 @@ export default function Table() {
       <p className="eyebrow">Week {game.currentWeek}</p>
       <h1>League table</h1>
       <p className="lede">Season points. Week points appear after the final scores are calculated.</p>
-      <LeagueTable players={game.players} publishedPicks={game.publishedPicks} meId={game.me.id} />
-      <p className="hint">3 points for an exact score. 1 point for the right result. Your row is highlighted.</p>
+      <LeagueTable players={game.players} publishedPicks={game.publishedPicks.filter((pick) => game.fixtures.some((fixture) => fixture.hardest && fixture.id === pick.fixtureId))} />
+      <p className="hint">3 points for an exact score. 1 point for the right result.</p>
     </section>
   )
 }
