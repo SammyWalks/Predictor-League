@@ -49,6 +49,7 @@ export function createStore({ demo = false, persist = false } = {}) {
         score: scores[id],
         locked: true,
         pointsAwarded: null,
+        enteredByAdmin: false,
       })
       state.publishedPicks.push({
         userId: 'reuben',
@@ -57,6 +58,7 @@ export function createStore({ demo = false, persist = false } = {}) {
         score: scores[id],
         pointsAwarded: null,
         lockedAt: '2026-11-18T12:00:00.000Z',
+        enteredByAdmin: false,
       })
     })
     state.entries.push({ userId: 'reuben', week: CURRENT_WEEK, lockedAt: '2026-11-18T12:00:00.000Z' })
@@ -67,6 +69,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       score: '0-0',
       locked: false,
       pointsAwarded: null,
+      enteredByAdmin: false,
     })
   }
 
@@ -133,6 +136,7 @@ export function createStore({ demo = false, persist = false } = {}) {
           score: prediction.score,
           locked: prediction.locked,
           pointsAwarded: prediction.pointsAwarded,
+          enteredByAdmin: Boolean(prediction.enteredByAdmin),
         })),
       publishedPicks: clone(state.publishedPicks),
       entries: clone(state.entries),
@@ -177,6 +181,7 @@ export function createStore({ demo = false, persist = false } = {}) {
         existing.score = canonical
         existing.locked = false
         existing.week = fixture.week
+        existing.enteredByAdmin = false
       } else {
         state.predictions.push({
           userId: user.id,
@@ -185,6 +190,7 @@ export function createStore({ demo = false, persist = false } = {}) {
           score: canonical,
           locked: false,
           pointsAwarded: null,
+          enteredByAdmin: false,
         })
       }
       emit()
@@ -217,6 +223,7 @@ export function createStore({ demo = false, persist = false } = {}) {
           score: prediction.score,
           pointsAwarded: null,
           lockedAt,
+          enteredByAdmin: Boolean(prediction.enteredByAdmin),
         })
       })
       emit()
@@ -287,6 +294,96 @@ export function createStore({ demo = false, persist = false } = {}) {
       else state.fixtures.push(next)
       emit()
       return { ok: true, id }
+    },
+    adminLoadPlayerPredictions(token, userId) {
+      requireAdmin(token)
+      const player = state.players.find((item) => item.id === userId)
+      if (!player) throw new Error('Player not found')
+      const week = state.currentWeek
+      return {
+        userId,
+        week,
+        locked: state.entries.some((entry) => entry.userId === userId && entry.week === week),
+        predictions: state.predictions
+          .filter((prediction) => prediction.userId === userId && prediction.week === week)
+          .filter((prediction) => state.fixtures.some((fixture) => fixture.id === prediction.fixtureId && fixture.hardest))
+          .map((prediction) => ({
+            fixtureId: prediction.fixtureId,
+            score: prediction.score,
+            locked: prediction.locked,
+            enteredByAdmin: Boolean(prediction.enteredByAdmin),
+          })),
+      }
+    },
+    adminSavePlayerPredictions(token, userId, scores, lock) {
+      requireAdmin(token)
+      const player = state.players.find((item) => item.id === userId)
+      if (!player) throw new Error('Player not found')
+      const week = state.currentWeek
+      const already = state.entries.some((entry) => entry.userId === userId && entry.week === week)
+      scores.forEach((item) => {
+        const fixture = state.fixtures.find((candidate) => candidate.id === Number(item.fixtureId))
+        if (!fixture || fixture.week !== week || !fixture.hardest) {
+          throw new Error('That fixture is not in this week\'s round')
+        }
+        const parsed = parseScore(String(item.score || ''))
+        if (!parsed) throw new Error('Enter a score like 2-1')
+        const canonical = formatScore(parsed.home, parsed.away)
+        const existing = state.predictions.find((prediction) => prediction.userId === userId && prediction.fixtureId === fixture.id)
+        if (existing) {
+          existing.score = canonical
+          existing.week = week
+          existing.enteredByAdmin = true
+        } else {
+          state.predictions.push({
+            userId,
+            fixtureId: fixture.id,
+            week,
+            score: canonical,
+            locked: false,
+            pointsAwarded: null,
+            enteredByAdmin: true,
+          })
+        }
+      })
+      const required = requiredFixtures(state)
+      if (lock && !already) {
+        const missing = required.filter((fixture) => {
+          const prediction = state.predictions.find((item) => item.userId === userId && item.fixtureId === fixture.id)
+          return !prediction || !parseScore(prediction.score)
+        })
+        if (required.length === 0) throw new Error('There are no fixtures to lock')
+        if (missing.length) throw new Error(`Add a score for ${missing.map((fixture) => `${fixture.home} vs ${fixture.away}`).join(', ')}`)
+        state.entries.push({ userId, week, lockedAt: new Date().toISOString() })
+      }
+      if (lock || already) {
+        const touched = new Set((scores || []).map((item) => Number(item.fixtureId)))
+        required.forEach((fixture) => {
+          const include = (lock && !already) || touched.has(fixture.id)
+          if (!include) return
+          const prediction = state.predictions.find((item) => item.userId === userId && item.fixtureId === fixture.id)
+          if (!prediction) return
+          prediction.locked = true
+          const published = state.publishedPicks.find((pick) => pick.userId === userId && pick.fixtureId === fixture.id)
+          if (published) {
+            published.score = prediction.score
+            published.enteredByAdmin = Boolean(prediction.enteredByAdmin)
+          } else {
+            state.publishedPicks.push({
+              userId,
+              fixtureId: fixture.id,
+              week,
+              score: prediction.score,
+              pointsAwarded: null,
+              lockedAt: new Date().toISOString(),
+              enteredByAdmin: Boolean(prediction.enteredByAdmin),
+            })
+          }
+        })
+        calculateWeek(state, week, () => {})
+      }
+      emit()
+      return { ok: true, locked: Boolean(lock) || already }
     },
     adminSetWeek(token, week) {
       requireAdmin(token)

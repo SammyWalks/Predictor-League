@@ -9,8 +9,9 @@ function heading(fixture) {
 
 function cell(pick) {
   if (!pick) return '–'
-  if (pick.pointsAwarded == null) return pick.score
-  return `${pick.score} (${pick.pointsAwarded})`
+  const score = pick.pointsAwarded == null ? pick.score : `${pick.score} (${pick.pointsAwarded})`
+  if (!pick.enteredByAdmin) return score
+  return <span>{score}<span className="admin-note">via admin</span></span>
 }
 
 export default function Results() {

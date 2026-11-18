@@ -93,10 +93,21 @@ input {
   min-height: 44px;
 }
 input[type="color"] { padding: 4px; height: 48px; }
+select {
+  width: 100%;
+  margin-top: 6px;
+  background: #000;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 10px;
+  font-size: 10px;
+  min-height: 44px;
+}
 .form-error { color: #fecaca; background: #450a0a; border: 2px solid #f87171; padding: 10px; margin: 10px 0; }
-.hero { text-align: left; }
+.hero { text-align: center; }
 .hero-points { font-size: 12px; margin: 8px 0 12px; }
-.hero-actions { margin-top: 16px; }
+.hero-actions { margin-top: 16px; justify-content: center; }
+.admin-note { display: block; margin-top: 4px; color: #ffd700; font-size: 7px; }
 .pill {
   display: inline-block;
   padding: 6px 8px;

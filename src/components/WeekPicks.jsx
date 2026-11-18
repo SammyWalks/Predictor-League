@@ -31,7 +31,7 @@ export default function WeekPicks({ fixtures, players, publishedPicks, entries, 
               {picks.map((pick) => (
                 <li key={pick.userId} className={pick.userId === meId ? 'me' : ''}>
                   <span className="player-name" style={{ color: pick.player?.colour || '#fff' }}>{pick.player?.name || 'Player'}</span>
-                  <span className="pick-score">{pick.score}</span>
+                  <span className="pick-score">{pick.score}{pick.enteredByAdmin ? ' (admin)' : ''}</span>
                   <span className="pick-points">{pick.pointsAwarded == null ? '' : `${pick.pointsAwarded} pts`}</span>
                 </li>
               ))}
