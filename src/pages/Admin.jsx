@@ -5,6 +5,7 @@ import { fetchRoundEvents, matchFixtures } from '../data/football'
 import { scoringMessage } from '../data/scoring'
 import { friendlyError } from '../supabase'
 import AdminPlayerPicks from '../components/AdminPlayerPicks'
+import Ball from '../components/Ball'
 
 export default function Admin() {
   const game = useGame()
@@ -172,7 +173,7 @@ export default function Admin() {
       <AdminPlayerPicks />
       <section className="card">
         <p className="eyebrow">Admin</p>
-        <h1>Final scores</h1>
+        <h1><Ball />Final scores</h1>
         <p className="lede">Type the weekend scores, or fetch them. Then calculate points. Doing it again will not double-count.</p>
         <div className="hero-actions">
           <button type="button" className="btn secondary" onClick={fetchScores} disabled={busy}>Fetch scores</button>

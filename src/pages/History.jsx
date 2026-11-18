@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useGame } from '../context/GameContext'
 import ResultsGrid from '../components/ResultsGrid'
+import Ball from '../components/Ball'
 
 export default function History() {
   const game = useGame()
@@ -17,7 +18,7 @@ export default function History() {
   return (
     <section className="card">
       <p className="eyebrow">Past weeks</p>
-      <h1>Week history</h1>
+      <h1><Ball />Week history</h1>
       <label>
         Gameweek
         <select value={week || ''} onChange={(event) => setWeek(Number(event.target.value))}>

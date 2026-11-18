@@ -1,5 +1,6 @@
 import { useGame } from '../context/GameContext'
 import { leagueRecords, seasonRows } from '../data/extras'
+import Ball from '../components/Ball'
 
 export default function Stats() {
   const game = useGame()
@@ -9,7 +10,7 @@ export default function Stats() {
   return (
     <section className="card">
       <p className="eyebrow">Season</p>
-      <h1>Stats</h1>
+      <h1><Ball />Stats</h1>
       <div className="records">
         <p>{records.bestWeek ? `Best week: ${records.bestWeek.name}, week ${records.bestWeek.week}, ${records.bestWeek.points} pts` : 'Best week appears after a gameweek is scored.'}</p>
         <p>{records.mostExact ? `Most exact scores in a week: ${records.mostExact.name}, ${records.mostExact.exact}` : 'No exact scores yet.'}</p>
