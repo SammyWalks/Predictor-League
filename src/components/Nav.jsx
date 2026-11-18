@@ -1,38 +1,38 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useGame } from '../context/GameContext'
 
-export default function Nav({ state, setState }) {
-  const user = state.users.find(u => u.id === state.currentUserId)
-  const navigate = useNavigate()
+const LINKS = [
+  { to: '/', label: 'Home', short: 'Home' },
+  { to: '/predict', label: 'Predict', short: 'Picks' },
+  { to: '/table', label: 'Table', short: 'Table' },
+  { to: '/results', label: 'Results', short: 'Week' },
+  { to: '/profile', label: 'Profile', short: 'You' },
+]
 
-  const logout = () => {
-    setState({ ...state, currentUserId: null })
-    navigate('/login')
-  }
-
-  if (!user) return null
+export default function Nav() {
+  const { me, logout } = useGame()
+  const { pathname } = useLocation()
+  if (!me) return null
 
   return (
-    <nav style={{
-      background: '#000',
-      borderBottom: '3px solid #fff',
-      padding: '12px 20px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 20,
-      fontSize: 11
-    }}>
-      <div style={{ display: 'flex', gap: 16 }}>
-        <Link to="/" style={{ color: '#ffd700' }}>HOME</Link>
-        <Link to="/predict" style={{ color: '#fff' }}>PREDICT</Link>
-        <Link to="/table" style={{ color: '#fff' }}>TABLE</Link>
-        <Link to="/results" style={{ color: '#fff' }}>RESULTS</Link>
-        <Link to="/profile" style={{ color: '#fff' }}>PROFILE</Link>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ color: user.colour }}>{user.name}</span>
-        <button onClick={logout} className="btn" style={{ padding: '6px 12px', fontSize: 9 }}>LOG OUT</button>
-      </div>
-    </nav>
+    <>
+      <nav className="topnav">
+        <div className="nav-links">
+          {LINKS.map((link) => (
+            <Link key={link.to} to={link.to} className={pathname === link.to ? 'active' : ''}>{link.label}</Link>
+          ))}
+          {me.isAdmin && <Link to="/admin" className={pathname === '/admin' ? 'active' : ''}>Admin</Link>}
+        </div>
+        <div className="nav-user">
+          <span style={{ color: me.colour }}>{me.name}</span>
+          <button type="button" className="btn btn-small" onClick={logout}>Log out</button>
+        </div>
+      </nav>
+      <nav className="bottomnav">
+        {LINKS.map((link) => (
+          <Link key={link.to} to={link.to} className={pathname === link.to ? 'active' : ''}>{link.short}</Link>
+        ))}
+      </nav>
+    </>
   )
 }

@@ -1,4 +1,10 @@
--- Run this in Supabase SQL Editor
+-- Older setup script. Do not use this for new changes.
+-- Run the files in supabase/migrations instead:
+--   1. 20261118120000_lock_in_and_scoring.sql
+--   2. 20261118120100_remove_kieran_savage.sql
+--
+-- The original notes are below. Running this file again only inserts players
+-- that are not already there. It does not contain Kieran Savage.
 
 create table if not exists users (
   id text primary key,

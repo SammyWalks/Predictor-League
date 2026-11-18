@@ -1,58 +1,43 @@
 import { Link } from 'react-router-dom'
-import Nav from '../components/Nav'
+import { useGame } from '../context/GameContext'
+import LeagueTable from '../components/LeagueTable'
+import StatusPill from '../components/StatusPill'
 
-export default function Dashboard({ state, setState }) {
-  const user = state.users.find(u => u.id === state.currentUserId)
-  const sorted = [...state.users].sort((a, b) => b.points - a.points)
+export default function Dashboard() {
+  const game = useGame()
+  const selected = game.fixtures.filter((fixture) => fixture.hardest)
 
   return (
     <div>
-      <Nav state={state} setState={setState} />
+      <section className="card hero">
+        <p className="eyebrow">Week {game.currentWeek}</p>
+        <h1>{game.me.name}</h1>
+        <p className="hero-points">{game.me.points} pts</p>
+        <StatusPill status={game.status} />
+        <div className="hero-actions">
+          <Link className="btn" to="/predict">{game.locked ? 'See locked picks' : 'Make predictions'}</Link>
+          {game.me.isAdmin && <Link className="btn secondary" to="/admin">Enter scores</Link>}
+        </div>
+      </section>
 
-      <div className="card" style={{ textAlign: 'center', background: '#000' }}>
-        <div style={{ fontSize: 14, color: '#ffd700' }}>WEEK {state.currentWeek}</div>
-        <div style={{ fontSize: 18, margin: '8px 0' }}>{user.name}</div>
-        <div style={{ fontSize: 12 }}>PTS: {user.points}</div>
-      </div>
+      <section className="card">
+        <h2>League table</h2>
+        <LeagueTable players={game.players} publishedPicks={game.publishedPicks} meId={game.me.id} />
+        <p className="hint"><Link to="/table">Open the full table</Link></p>
+      </section>
 
-      <div className="card">
-        <h2 style={{ fontSize: 14, marginBottom: 16 }}>LEAGUE TABLE</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>POS</th>
-              <th>PLAYER</th>
-              <th>PTS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((u, i) => (
-              <tr key={u.id} style={{ borderLeft: `4px solid ${u.colour}` }}>
-                <td>{i + 1}</td>
-                <td style={{ color: u.colour }}>{u.name}{u.wildcard && ' (WC)'}</td>
-                <td><strong>{u.points}</strong></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="card">
-        <h3 style={{ fontSize: 12, marginBottom: 12 }}>SELECTED FIXTURES</h3>
-        <table>
-          <thead>
-            <tr><th>TIME</th><th>MATCH</th></tr>
-          </thead>
-          <tbody>
-            {state.fixtures.filter(f => f.hardest).map(f => (
-              <tr key={f.id}>
-                <td>{f.time}</td>
-                <td>{f.home} vs {f.away}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <section className="card">
+        <h2>Selected fixtures</h2>
+        <p className="lede">Everyone predicts these. Wildcard players also predict the rest of the round.</p>
+        <ul className="fixture-mini">
+          {selected.map((fixture) => (
+            <li key={fixture.id}>
+              <span>{fixture.kickoffLabel}</span>
+              <strong>{fixture.home} vs {fixture.away}</strong>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   )
 }

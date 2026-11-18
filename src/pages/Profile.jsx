@@ -1,70 +1,98 @@
 import { useState } from 'react'
-import Nav from '../components/Nav'
+import { useGame } from '../context/GameContext'
+import { friendlyError } from '../supabase'
 
-export default function Profile({ state, setState }) {
-  const user = state.users.find(u => u.id === state.currentUserId)
-  const [name, setName] = useState(user.name)
-  const [colour, setColour] = useState(user.colour)
-  const [avatar, setAvatar] = useState(user.avatar)
+export default function Profile() {
+  const { me, updateProfile, changePassword, logout } = useGame()
+  const [name, setName] = useState(me.name)
+  const [colour, setColour] = useState(me.colour || '#ffd700')
+  const [avatar, setAvatar] = useState(me.avatar || '')
   const [currentPass, setCurrentPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [confirmPass, setConfirmPass] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const saveProfile = () => {
-    const updated = state.users.map(u => u.id === user.id ? { ...u, name, colour, avatar } : u)
-    setState({ ...state, users: updated })
-    alert('Profile saved')
+  async function saveProfile(event) {
+    event.preventDefault()
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      await updateProfile({ name, colour, avatar })
+      setMessage('Profile saved')
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const changePassword = () => {
-    if (currentPass !== user.password) {
-      alert('Current password incorrect')
+  async function savePassword(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+    if (newPass !== confirmPass) {
+      setError('New passwords do not match')
       return
     }
-    if (newPass !== confirmPass || newPass.length < 4) {
-      alert('New passwords do not match or too short')
-      return
+    setBusy(true)
+    try {
+      await changePassword(currentPass, newPass)
+      setCurrentPass('')
+      setNewPass('')
+      setConfirmPass('')
+      setMessage('Password changed')
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setBusy(false)
     }
-    const updated = state.users.map(u => u.id === user.id ? { ...u, password: newPass } : u)
-    setState({ ...state, users: updated })
-    setCurrentPass(''); setNewPass(''); setConfirmPass('')
-    alert('Password changed')
   }
 
   return (
-    <div>
-      <Nav state={state} setState={setState} />
-      <div className="card" style={{ maxWidth: 520 }}>
-        <h2 style={{ fontSize: 14 }}>PROFILE</h2>
-        <div style={{ margin: '16px 0' }}>
-          <img src={avatar || 'https://placehold.co/80'} alt="" style={{ width: 70, height: 70, border: `3px solid ${colour}` }} />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>Name</label>
-          <input value={name} onChange={e => setName(e.target.value)} style={{ width: '100%', padding: 8, marginTop: 4, background: '#000', border: '2px solid #fff', color: '#fff' }} />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>Colour</label><br />
-          <input type="color" value={colour} onChange={e => setColour(e.target.value)} style={{ marginTop: 4 }} />
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <label>Avatar URL</label>
-          <input value={avatar} onChange={e => setAvatar(e.target.value)} placeholder="https://..." style={{ width: '100%', padding: 8, marginTop: 4, background: '#000', border: '2px solid #fff', color: '#fff' }} />
-        </div>
-        <button className="btn" onClick={saveProfile}>SAVE PROFILE</button>
-
-        <h3 style={{ fontSize: 12, marginTop: 32 }}>CHANGE PASSWORD</h3>
-        <div style={{ marginBottom: 10 }}>
-          <input type="password" value={currentPass} onChange={e => setCurrentPass(e.target.value)} placeholder="Current password" style={{ width: '100%', padding: 8, background: '#000', border: '2px solid #fff', color: '#fff' }} />
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <input type="password" value={newPass} onChange={e => setNewPass(e.target.value)} placeholder="New password" style={{ width: '100%', padding: 8, background: '#000', border: '2px solid #fff', color: '#fff' }} />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <input type="password" value={confirmPass} onChange={e => setConfirmPass(e.target.value)} placeholder="Confirm new password" style={{ width: '100%', padding: 8, background: '#000', border: '2px solid #fff', color: '#fff' }} />
-        </div>
-        <button className="btn" onClick={changePassword}>CHANGE PASSWORD</button>
+    <div className="card profile-card">
+      <h1>Profile</h1>
+      <div className="avatar-row">
+        <img src={avatar || 'https://placehold.co/80x80/111/fff?text=PL'} alt="" style={{ borderColor: colour }} />
       </div>
+      <form onSubmit={saveProfile}>
+        <label>
+          Name
+          <input value={name} onChange={(event) => setName(event.target.value)} />
+        </label>
+        <label>
+          Colour
+          <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} />
+        </label>
+        <label>
+          Avatar URL
+          <input value={avatar} onChange={(event) => setAvatar(event.target.value)} placeholder="https://" />
+        </label>
+        <button className="btn" type="submit" disabled={busy}>Save profile</button>
+      </form>
+
+      <form onSubmit={savePassword}>
+        <h2>Change password</h2>
+        <label>
+          Current password
+          <input type="password" value={currentPass} onChange={(event) => setCurrentPass(event.target.value)} />
+        </label>
+        <label>
+          New password
+          <input type="password" value={newPass} onChange={(event) => setNewPass(event.target.value)} />
+        </label>
+        <label>
+          Confirm new password
+          <input type="password" value={confirmPass} onChange={(event) => setConfirmPass(event.target.value)} />
+        </label>
+        <button className="btn secondary" type="submit" disabled={busy}>Change password</button>
+      </form>
+      {message && <p className="note" role="status">{message}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
+      {me.isAdmin && <p className="hint"><a href="/admin">Open the admin screen</a></p>}
+      <button type="button" className="btn secondary logout-mobile" onClick={logout}>Log out</button>
     </div>
   )
 }

@@ -1,32 +1,15 @@
-import Nav from '../components/Nav'
+import { useGame } from '../context/GameContext'
+import LeagueTable from '../components/LeagueTable'
 
-export default function Table({ state }) {
-  const sorted = [...state.users].sort((a, b) => b.points - a.points)
-
+export default function Table() {
+  const game = useGame()
   return (
-    <div>
-      <Nav state={state} />
-      <div className="card">
-        <h2 style={{ fontSize: 14, marginBottom: 16 }}>LEAGUE TABLE</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>POS</th>
-              <th>PLAYER</th>
-              <th>PTS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((u, i) => (
-              <tr key={u.id} style={{ borderLeft: `4px solid ${u.colour}` }}>
-                <td>{i + 1}</td>
-                <td style={{ color: u.colour }}>{u.name}{u.wildcard && ' (WC)'}</td>
-                <td><strong>{u.points}</strong></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <section className="card">
+      <p className="eyebrow">Week {game.currentWeek}</p>
+      <h1>League table</h1>
+      <p className="lede">Season points. Week points appear after the final scores are calculated.</p>
+      <LeagueTable players={game.players} publishedPicks={game.publishedPicks} meId={game.me.id} />
+      <p className="hint">3 points for an exact score. 1 point for the right result. Your row is highlighted.</p>
+    </section>
   )
 }
