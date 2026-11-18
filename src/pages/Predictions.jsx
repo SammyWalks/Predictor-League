@@ -4,6 +4,7 @@ import ScoreInputs from '../components/ScoreInputs'
 import StatusPill from '../components/StatusPill'
 import ConfirmDialog from '../components/ConfirmDialog'
 import WeekPicks from '../components/WeekPicks'
+import PicksHidden from '../components/PicksHidden'
 import { friendlyError } from '../supabase'
 import { parseScore } from '../data/scoring'
 import Countdown from '../components/Countdown'
@@ -136,13 +137,17 @@ export default function Predictions() {
 
       <section className="card">
         <p className="live-label">Live</p>
-        <WeekPicks
-          fixtures={game.requiredFixtures}
-          players={game.players}
-          publishedPicks={game.publishedPicks}
-          entries={game.entries}
-          meId={game.me.id}
-        />
+        {game.picksRevealed ? (
+          <WeekPicks
+            fixtures={game.requiredFixtures}
+            players={game.players}
+            publishedPicks={game.publishedPicks}
+            entries={game.entries}
+            meId={game.me.id}
+          />
+        ) : (
+          <PicksHidden />
+        )}
       </section>
 
       {confirming && (
@@ -153,7 +158,7 @@ export default function Predictions() {
           onCancel={() => setConfirming(false)}
           onConfirm={confirmLock}
         >
-          <p>Everyone will be able to see these picks. You will not be able to change them.</p>
+          <p>Players who have locked in can see these. You will not be able to change them.</p>
           <ul className="confirm-list">
             {game.requiredFixtures.map((fixture) => (
               <li key={fixture.id}>

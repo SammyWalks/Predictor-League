@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
 import Ball from './Ball'
-import Sprite from './Sprite'
+import Sprite, { kitProps } from './Sprite'
 
 const LINKS = [
   { to: '/', label: 'Home' },
@@ -35,7 +35,7 @@ export default function Nav() {
           <span className="brand-title">PREDICTOR LEAGUE</span>
         </Link>
         <Link to="/profile" className="who">
-          <Sprite kit={me.sprite} colour={me.colour} size={26} />
+          <Sprite {...kitProps(me)} size={26} />
           <span style={{ color: me.colour }}>{me.name}</span>
         </Link>
       </div>

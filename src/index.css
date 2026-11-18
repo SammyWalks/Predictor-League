@@ -76,20 +76,19 @@ a { color: #ffd700; }
   text-decoration: none;
   line-height: 1.8;
 }
-.brand { min-width: 0; }
-.brand .pixel-ball { width: 22px; height: 22px; margin-right: 0; flex: 0 0 auto; }
+.brand { flex: 0 0 auto; }
+.brand .pixel-ball { width: 28px; height: 28px; margin-right: 0; flex: 0 0 auto; vertical-align: middle; }
 .brand-title {
   font-size: 10px;
   line-height: 1.8;
   color: #ffffff;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .who {
-  flex: 0 1 auto;
-  max-width: 46%;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
   font-size: 10px;
 }
 .who span {
@@ -352,16 +351,16 @@ table.league .points { font-weight: 700; }
 .check input { width: auto; min-height: 0; }
 .stack-form input { width: 100%; }
 .loading-card { text-align: center; font-family: 'Press Start 2P', monospace; font-size: 10px; }
-.loading-card .pixel-ball { width: 36px; height: 36px; margin-bottom: 12px; }
+.loading-card .pixel-ball { width: 64px; height: 64px; margin-bottom: 12px; vertical-align: middle; }
 .pixel-ball {
-  width: 16px;
-  height: 16px;
+  width: 40px;
+  height: 40px;
   margin-right: 8px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  vertical-align: -2px;
+  object-fit: contain;
+  image-rendering: auto;
+  vertical-align: -12px;
 }
-h1 .pixel-ball, h2 .pixel-ball { width: 18px; height: 18px; }
+h1 .pixel-ball, h2 .pixel-ball { width: 32px; height: 32px; vertical-align: -8px; }
 .pixel-ball.spin { animation: ball-spin 1.2s linear infinite; }
 @keyframes ball-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
@@ -405,7 +404,11 @@ h1 .pixel-ball, h2 .pixel-ball { width: 18px; height: 18px; }
 .hi-scores { list-style: none; text-align: left; margin-top: 16px; }
 .hi-scores li { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 2px solid #333; }
 .arcade-controls { display: flex; gap: 8px; flex-wrap: wrap; }
-.kit { image-rendering: pixelated; vertical-align: middle; margin-right: 4px; }
+.kit { shape-rendering: crispEdges; vertical-align: middle; margin-right: 4px; }
+.kit-preview { display: flex; align-items: center; gap: 12px; margin: 12px 0 16px; }
+.kit-preview .player-name { font-size: 12px; line-height: 1.8; }
+.kit-colours { display: flex; flex-wrap: wrap; gap: 12px; }
+.kit-colours label { flex: 1 1 140px; }
 .kit-picker { display: flex; flex-wrap: wrap; gap: 8px; }
 .kit-choice { background: #000; color: #fff; border: 2px solid #fff; padding: 6px; }
 .kit-choice.on { border-color: #ffd700; }
@@ -414,7 +417,7 @@ h1 .pixel-ball, h2 .pixel-ball { width: 18px; height: 18px; }
 .xp-track span { display: block; height: 100%; background: #ffd700; }
 .toast {
   position: fixed;
-  top: 72px;
+  top: 168px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
@@ -492,6 +495,7 @@ html.crowd.cheering body::before {
     z-index: 15;
   }
   .brand-title { font-size: 12px; }
+  .brand .pixel-ball { width: 36px; height: 36px; }
   .who { font-size: 11px; max-width: none; }
   .tab-row {
     position: static;

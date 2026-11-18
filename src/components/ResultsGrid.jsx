@@ -1,4 +1,4 @@
-import Sprite from './Sprite'
+import Sprite, { kitProps } from './Sprite'
 
 function heading(fixture) {
   if (fixture.actualHome != null && fixture.actualAway != null) {
@@ -37,7 +37,7 @@ export default function ResultsGrid({ fixtures, players, publishedPicks, entries
             return (
               <tr key={player.id} className={locked ? '' : 'not-locked'}>
                 <td className="player-name" style={{ color: player.colour || '#94a3b8' }}>
-                  <Sprite kit={player.sprite} colour={player.colour} size={20} /> {player.name}
+                  <Sprite {...kitProps(player)} size={20} /> {player.name}
                 </td>
                 {locked
                   ? selected.map((fixture) => <td key={fixture.id}>{cell(picks.find((pick) => pick.fixtureId === fixture.id))}</td>)

@@ -2,6 +2,7 @@ import { PLAYERS } from './players.js'
 import { FIXTURES, CURRENT_WEEK, SEASON, LEAGUE_ID } from './fixtures.js'
 import { formatScore, parseScore, settlePick } from './scoring.js'
 import { firstKickoff } from './extras.js'
+import { visiblePicks, weekRevealed } from './visibility.js'
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value))
@@ -139,8 +140,26 @@ export function createStore({ demo = false, persist = false } = {}) {
           pointsAwarded: prediction.pointsAwarded,
           enteredByAdmin: Boolean(prediction.enteredByAdmin),
         })),
-      publishedPicks: clone(state.publishedPicks),
+      publishedPicks: visiblePicks({
+        user,
+        picks: state.publishedPicks,
+        fixtures: state.fixtures,
+        entries: state.entries,
+      }),
       entries: clone(state.entries),
+      picksRevealed: user ? weekRevealed({
+        user,
+        week: state.currentWeek,
+        fixtures: state.fixtures,
+        entries: state.entries,
+      }) : false,
+      revealedWeeks: [...new Set(state.fixtures.map((fixture) => fixture.week))]
+        .filter((week) => user && weekRevealed({
+          user,
+          week,
+          fixtures: state.fixtures,
+          entries: state.entries,
+        })),
     }
   }
 
@@ -165,6 +184,9 @@ export function createStore({ demo = false, persist = false } = {}) {
         colour: player.colour,
         points: player.points,
         sprite: player.sprite || 'striker',
+        kitShirt: player.kitShirt || player.colour,
+        kitShorts: player.kitShorts || '#ffffff',
+        kitSocks: player.kitSocks || player.kitShirt || player.colour,
       }))
     },
     logout(token) {
@@ -242,15 +264,25 @@ export function createStore({ demo = false, persist = false } = {}) {
       emit()
       return { ok: true }
     },
-    updateProfile(token, { name, colour, avatar, sprite }) {
+    updateProfile(token, { name, colour, sprite, kitShirt, kitShorts, kitSocks }) {
       const user = userFromToken(token)
       const nextName = String(name || '').trim()
       if (nextName.length < 2) throw new Error('Name is too short')
       if (!/^#[0-9a-fA-F]{6}$/.test(colour || '')) throw new Error('Pick a colour')
+      const paint = (value, label) => {
+        if (value == null || value === '') return null
+        if (!/^#[0-9a-fA-F]{6}$/.test(value)) throw new Error(`Pick a ${label} colour`)
+        return value
+      }
       user.name = nextName
       user.colour = colour
-      user.avatar = String(avatar || '').trim()
       if (['striker', 'keeper', 'winger', 'captain', 'wall'].includes(sprite)) user.sprite = sprite
+      const shirt = paint(kitShirt, 'shirt')
+      const shorts = paint(kitShorts, 'shorts')
+      const socks = paint(kitSocks, 'socks')
+      if (shirt) user.kitShirt = shirt
+      if (shorts) user.kitShorts = shorts
+      if (socks) user.kitSocks = socks
       emit()
       return { ok: true }
     },
@@ -471,6 +503,9 @@ function publicUser(user) {
     wildcard: Boolean(user.wildcard),
     isAdmin: Boolean(user.isAdmin),
     sprite: user.sprite || 'striker',
+    kitShirt: user.kitShirt || user.colour || '#94a3b8',
+    kitShorts: user.kitShorts || '#ffffff',
+    kitSocks: user.kitSocks || user.kitShirt || user.colour || '#94a3b8',
   }
 }
 

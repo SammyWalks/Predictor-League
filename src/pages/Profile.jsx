@@ -13,8 +13,10 @@ export default function Profile() {
   const gamePicks = allPicks
   const [name, setName] = useState(me.name)
   const [colour, setColour] = useState(me.colour || '#ffd700')
-  const [avatar, setAvatar] = useState(me.avatar || '')
   const [sprite, setSprite] = useState(me.sprite || 'striker')
+  const [kitShirt, setKitShirt] = useState(me.kitShirt || me.colour || '#ffd700')
+  const [kitShorts, setKitShorts] = useState(me.kitShorts || '#ffffff')
+  const [kitSocks, setKitSocks] = useState(me.kitSocks || me.kitShirt || me.colour || '#ffd700')
   const [currentPass, setCurrentPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [confirmPass, setConfirmPass] = useState('')
@@ -28,7 +30,7 @@ export default function Profile() {
     setError('')
     setMessage('')
     try {
-      await updateProfile({ name, colour, avatar, sprite })
+      await updateProfile({ name, colour, sprite, kitShirt, kitShorts, kitSocks })
       setMessage('Profile saved')
     } catch (err) {
       setError(friendlyError(err))
@@ -64,31 +66,42 @@ export default function Profile() {
       <h1><Ball />Edit profile</h1>
       <Badges badges={badgesFor(me, gamePlayers, gamePicks)} />
       <XpBar points={me.points} />
-      <p className="lede">Pick a kit. The shirt uses your colour on the table.</p>
+      <p className="lede">Build your kit. This little player is your icon.</p>
+      <div className="kit-preview">
+        <Sprite kit={sprite} colour={colour} shirt={kitShirt} shorts={kitShorts} socks={kitSocks} size={64} />
+        <span className="player-name" style={{ color: colour }}>{name}</span>
+      </div>
       <div className="kit-picker">
         {KITS.map((kit) => (
           <button type="button" key={kit} className={sprite === kit ? 'kit-choice on' : 'kit-choice'} onClick={() => setSprite(kit)}>
-            <Sprite kit={kit} colour={colour} />
+            <Sprite kit={kit} colour={colour} shirt={kitShirt} shorts={kitShorts} socks={kitSocks} />
             <span>{kit}</span>
           </button>
         ))}
-      </div>
-      <div className="avatar-row">
-        <img src={avatar || 'https://placehold.co/80x80/111/fff?text=PL'} alt="" style={{ borderColor: colour }} />
       </div>
       <form onSubmit={saveProfile}>
         <label>
           Name
           <input value={name} onChange={(event) => setName(event.target.value)} />
         </label>
-        <label>
-          Colour
-          <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} />
-        </label>
-        <label>
-          Avatar URL
-          <input value={avatar} onChange={(event) => setAvatar(event.target.value)} placeholder="https://" />
-        </label>
+        <div className="kit-colours">
+          <label>
+            Name colour
+            <input type="color" value={colour} onChange={(event) => setColour(event.target.value)} />
+          </label>
+          <label>
+            Shirt
+            <input type="color" value={kitShirt} onChange={(event) => setKitShirt(event.target.value)} />
+          </label>
+          <label>
+            Shorts
+            <input type="color" value={kitShorts} onChange={(event) => setKitShorts(event.target.value)} />
+          </label>
+          <label>
+            Socks
+            <input type="color" value={kitSocks} onChange={(event) => setKitSocks(event.target.value)} />
+          </label>
+        </div>
         <button className="btn" type="submit" disabled={busy}>Save profile</button>
       </form>
 
