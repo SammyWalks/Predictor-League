@@ -7,6 +7,7 @@ import WeekPicks from '../components/WeekPicks'
 import { friendlyError } from '../supabase'
 import { parseScore } from '../data/scoring'
 import Countdown from '../components/Countdown'
+import Ball from '../components/Ball'
 
 export default function Predictions() {
   const game = useGame()
@@ -84,7 +85,7 @@ export default function Predictions() {
         <div className="section-head">
           <div>
             <p className="eyebrow">Week {game.currentWeek}</p>
-            <h1>{game.locked ? 'Locked predictions' : 'Make predictions'}</h1>
+            <h1><Ball />{game.locked ? 'Locked predictions' : 'Make predictions'}</h1>
           </div>
           <StatusPill status={game.status} />
         </div>

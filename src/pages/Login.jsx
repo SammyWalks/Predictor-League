@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
 import { friendlyError } from '../supabase'
+import Ball from '../components/Ball'
 
 export default function Login() {
   const { me, ready, login } = useGame()
@@ -29,7 +30,7 @@ export default function Login() {
     <div className="container login-wrap">
       <form className="card login-card" onSubmit={onSubmit}>
         <p className="eyebrow">Office Predictor League</p>
-        <h1>Log in</h1>
+        <h1><Ball />Log in</h1>
         <label>
           Name
           <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="username" required />

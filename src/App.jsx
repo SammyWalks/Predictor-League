@@ -11,11 +11,12 @@ import History from './pages/History'
 import Stats from './pages/Stats'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
+import Ball from './components/Ball'
 
 function Loading({ label }) {
   return (
     <div className="container">
-      <div className="card loading-card" role="status">{label}</div>
+      <div className="card loading-card" role="status"><Ball spin /><p>{label}</p></div>
     </div>
   )
 }
@@ -29,7 +30,7 @@ function Shell() {
     return (
       <div className="container">
         <div className="card">
-          <h1>Can't reach the game</h1>
+          <h1><Ball />Can't reach the game</h1>
           <p className="form-error" role="alert">{game.error}</p>
           <button type="button" className="btn" onClick={game.refresh}>Try again</button>
         </div>

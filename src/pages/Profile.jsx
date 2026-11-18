@@ -3,6 +3,7 @@ import { useGame } from '../context/GameContext'
 import { friendlyError } from '../supabase'
 import { badgesFor } from '../data/extras'
 import Badges from '../components/Badges'
+import Ball from '../components/Ball'
 
 export default function Profile() {
   const { me, players, allPicks, updateProfile, changePassword, logout } = useGame()
@@ -57,7 +58,7 @@ export default function Profile() {
 
   return (
     <div className="card profile-card">
-      <h1>Edit profile</h1>
+      <h1><Ball />Edit profile</h1>
       <Badges badges={badgesFor(me, gamePlayers, gamePicks)} />
       <p className="lede">Your name colour is the colour of your name in the league table.</p>
       <div className="avatar-row">

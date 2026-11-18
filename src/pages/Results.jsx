@@ -1,12 +1,13 @@
 import { useGame } from '../context/GameContext'
 import ResultsGrid from '../components/ResultsGrid'
+import Ball from '../components/Ball'
 
 export default function Results() {
   const game = useGame()
   return (
     <section className="card">
       <p className="eyebrow">Week {game.currentWeek}</p>
-      <h1>Results</h1>
+      <h1><Ball />Results</h1>
       <p className="lede">Locked predictions show here straight away. Points appear in brackets after the final scores are calculated.</p>
       <ResultsGrid
         fixtures={game.fixtures}

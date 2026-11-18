@@ -1,7 +1,7 @@
-const CACHE = 'predictor-shell-v1'
+const CACHE = 'predictor-shell-v2'
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['/', '/index.html', '/manifest.webmanifest'])))
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['/', '/index.html', '/manifest.webmanifest', '/img/ball.png'])))
   self.skipWaiting()
 })
 

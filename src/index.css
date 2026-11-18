@@ -259,6 +259,21 @@ table.league .points { font-weight: 700; }
 .check input { width: auto; min-height: 0; }
 .stack-form input { width: 100%; }
 .loading-card { text-align: center; font-family: 'Press Start 2P', monospace; font-size: 10px; }
+.loading-card .pixel-ball { width: 36px; height: 36px; margin-bottom: 12px; }
+.pixel-ball {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  vertical-align: -2px;
+}
+h1 .pixel-ball, h2 .pixel-ball { width: 18px; height: 18px; }
+.pixel-ball.spin { animation: ball-spin 1.2s linear infinite; }
+@keyframes ball-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .pixel-ball.spin { animation: none; }
+}
 .error-banner { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 @media (min-width: 800px) {
   .container { padding: 28px 24px 40px; }

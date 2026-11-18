@@ -4,6 +4,7 @@ import LeagueTable from '../components/LeagueTable'
 import StatusPill from '../components/StatusPill'
 import Countdown from '../components/Countdown'
 import { playerOfTheWeek } from '../data/extras'
+import Ball from '../components/Ball'
 
 export default function Dashboard() {
   const game = useGame()
@@ -15,7 +16,7 @@ export default function Dashboard() {
       {trophy && (
         <section className="trophy">
           <p className="eyebrow">Week {trophy.week}</p>
-          <h2>Player of the week</h2>
+          <h2><Ball />Player of the week</h2>
           <p className="trophy-names">{trophy.names.join(' and ')}</p>
           <p>{trophy.points} pts</p>
         </section>
@@ -33,7 +34,7 @@ export default function Dashboard() {
       </section>
 
       <section className="card">
-        <h2>League table</h2>
+        <h2><Ball />League table</h2>
         <LeagueTable players={game.players} picks={game.allPicks} />
       </section>
 
