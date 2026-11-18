@@ -6,7 +6,6 @@ const DEFAULT_STATE = {
     { id: 'saj', name: 'Saj Ali', colour: '#f59e0b', avatar: '', password: 'office', points: 23 },
     { id: 'morrell', name: 'Sam Morrell', colour: '#10b981', avatar: '', password: 'office', points: 21 },
     { id: 'matthew', name: 'Matthew Iles', colour: '#8b5cf6', avatar: '', password: 'office', points: 20 },
-    { id: 'kieran', name: 'Kieran Savage', colour: '#f97316', avatar: '', password: 'office', points: 12 },
     { id: 'annabel', name: 'Annabel', colour: '#ec4899', avatar: '', password: 'office', points: 0, wildcard: true },
     { id: 'sophie', name: 'Sophie', colour: '#06b6d4', avatar: '', password: 'office', points: 0, wildcard: true },
   ],
