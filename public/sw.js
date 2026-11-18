@@ -1,5 +1,5 @@
-const CACHE = 'predictor-shell-v4'
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/img/ball.png', '/favicon-32.png', '/icon-192.png', '/icon-512.png']
+const CACHE = 'predictor-shell-v5'
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/favicon-32.png', '/icon-192.png', '/icon-512.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)))
