@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
+import ArcadeControls from './ArcadeControls'
+import Sprite from './Sprite'
 
 const LINKS = [
   { to: '/', label: 'Home', short: 'Home' },
@@ -26,6 +28,8 @@ export default function Nav() {
           {me.isAdmin && <Link to="/admin" className={pathname === '/admin' ? 'active' : ''}>Admin</Link>}
         </div>
         <div className="nav-user">
+          <ArcadeControls />
+          <Sprite kit={me.sprite} colour={me.colour} size={22} />
           <span style={{ color: me.colour }}>{me.name}</span>
           <button type="button" className="btn btn-small" onClick={logout}>Log out</button>
         </div>

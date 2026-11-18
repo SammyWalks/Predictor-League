@@ -54,6 +54,7 @@ export async function updateProfile(token, profile) {
     p_name: profile.name,
     p_colour: profile.colour,
     p_avatar: profile.avatar || '',
+    p_sprite: profile.sprite || 'striker',
   })
 }
 
@@ -113,6 +114,13 @@ export async function adminSavePlayerPredictions(token, userId, scores, lock) {
     p_scores: scores,
     p_lock: lock,
   })
+}
+
+export async function arcadeTopScores() {
+  if (mockMode) return callMock('topScores', [])
+  const { data, error } = await supabase.rpc('arcade_top_scores')
+  if (error) return []
+  return data || []
 }
 
 export function subscribe(onChange) {

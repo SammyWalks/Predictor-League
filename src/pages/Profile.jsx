@@ -4,6 +4,8 @@ import { friendlyError } from '../supabase'
 import { badgesFor } from '../data/extras'
 import Badges from '../components/Badges'
 import Ball from '../components/Ball'
+import Sprite, { KITS } from '../components/Sprite'
+import XpBar from '../components/XpBar'
 
 export default function Profile() {
   const { me, players, allPicks, updateProfile, changePassword, logout } = useGame()
@@ -12,6 +14,7 @@ export default function Profile() {
   const [name, setName] = useState(me.name)
   const [colour, setColour] = useState(me.colour || '#ffd700')
   const [avatar, setAvatar] = useState(me.avatar || '')
+  const [sprite, setSprite] = useState(me.sprite || 'striker')
   const [currentPass, setCurrentPass] = useState('')
   const [newPass, setNewPass] = useState('')
   const [confirmPass, setConfirmPass] = useState('')
@@ -25,7 +28,7 @@ export default function Profile() {
     setError('')
     setMessage('')
     try {
-      await updateProfile({ name, colour, avatar })
+      await updateProfile({ name, colour, avatar, sprite })
       setMessage('Profile saved')
     } catch (err) {
       setError(friendlyError(err))
@@ -60,7 +63,16 @@ export default function Profile() {
     <div className="card profile-card">
       <h1><Ball />Edit profile</h1>
       <Badges badges={badgesFor(me, gamePlayers, gamePicks)} />
-      <p className="lede">Your name colour is the colour of your name in the league table.</p>
+      <XpBar points={me.points} />
+      <p className="lede">Pick a kit. The shirt uses your colour on the table.</p>
+      <div className="kit-picker">
+        {KITS.map((kit) => (
+          <button type="button" key={kit} className={sprite === kit ? 'kit-choice on' : 'kit-choice'} onClick={() => setSprite(kit)}>
+            <Sprite kit={kit} colour={colour} />
+            <span>{kit}</span>
+          </button>
+        ))}
+      </div>
       <div className="avatar-row">
         <img src={avatar || 'https://placehold.co/80x80/111/fff?text=PL'} alt="" style={{ borderColor: colour }} />
       </div>
