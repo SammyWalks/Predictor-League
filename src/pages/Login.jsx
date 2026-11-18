@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
 import { friendlyError } from '../supabase'
 import Ball from '../components/Ball'
+import PixelArt, { ArtCredit } from '../components/PixelArt'
 
 export default function Login() {
   const { me, ready, login } = useGame()
@@ -29,6 +30,7 @@ export default function Login() {
   return (
     <div className="container login-wrap">
       <form className="card login-card" onSubmit={onSubmit}>
+        <PixelArt name="slide-tackle" alt="A pixel player sliding in on the ball" className="login-hero" eager />
         <p className="eyebrow">Office Predictor League</p>
         <h1><Ball />Log in</h1>
         <label>
@@ -43,6 +45,7 @@ export default function Login() {
         <button className="btn" type="submit" disabled={busy}>{busy ? 'Checking…' : 'Log in'}</button>
         <p className="hint">Shared office password: office</p>
       </form>
+      <ArtCredit />
     </div>
   )
 }

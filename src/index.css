@@ -250,7 +250,7 @@ table.league .points { font-weight: 700; }
 .modal { width: min(520px, 100%); margin: 0; max-height: 90vh; overflow: auto; }
 .modal-body { margin-bottom: 16px; }
 .modal-actions { justify-content: flex-end; }
-.login-wrap { min-height: 100vh; display: flex; align-items: center; }
+.login-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .login-card { width: min(440px, 100%); margin: 24px auto; }
 .avatar-row img { width: 72px; height: 72px; object-fit: cover; border: 3px solid #fff; }
 .profile-card { max-width: 560px; }
@@ -273,6 +273,29 @@ h1 .pixel-ball, h2 .pixel-ball { width: 18px; height: 18px; }
 @keyframes ball-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .pixel-ball.spin { animation: none; }
+  .pop-art img { animation: none; }
+}
+.pixel-art img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.login-hero img { max-height: 150px; margin: 0 auto 12px; }
+.trophy-art img { max-height: 140px; margin: 0 auto 8px; }
+.empty-art img { max-height: 96px; margin: 8px auto; }
+.pop-art img { max-height: 140px; margin: 8px auto; animation: pop-in 0.45s ease; }
+@keyframes pop-in {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.art-credit {
+  text-align: center;
+  font-size: 7px;
+  line-height: 1.6;
+  color: #d5d5d5;
+  margin: 12px 0 8px;
 }
 .error-banner { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 @media (min-width: 800px) {
