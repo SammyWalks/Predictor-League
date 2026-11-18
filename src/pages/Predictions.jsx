@@ -1,67 +1,155 @@
-import { useState } from 'react'
-import Nav from '../components/Nav'
+import { useEffect, useRef, useState } from 'react'
+import { useGame } from '../context/GameContext'
+import ScoreInputs from '../components/ScoreInputs'
+import StatusPill from '../components/StatusPill'
+import ConfirmDialog from '../components/ConfirmDialog'
+import WeekPicks from '../components/WeekPicks'
+import { friendlyError } from '../supabase'
+import { parseScore } from '../data/scoring'
 
-export default function Predictions({ state, setState }) {
-  const user = state.users.find(u => u.id === state.currentUserId)
-  const locked = state.locked[user.id]
-  const myPreds = state.predictions[user.id] || {}
-  const [preds, setPreds] = useState(myPreds)
-  const [justLocked, setJustLocked] = useState(false)
+export default function Predictions() {
+  const game = useGame()
+  const [draft, setDraft] = useState({})
+  const [note, setNote] = useState('')
+  const [error, setError] = useState('')
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const dirtyRef = useRef({})
+  const timers = useRef({})
 
-  const fixturesToShow = user.wildcard ? state.fixtures : state.fixtures.filter(f => f.hardest)
+  const savedKey = game.myPredictions.map((prediction) => `${prediction.fixtureId}:${prediction.score}`).join('|')
 
-  const update = (id, score) => {
-    if (locked) return
-    setPreds({ ...preds, [id]: score })
+  useEffect(() => {
+    setDraft((current) => {
+      const next = {}
+      game.requiredFixtures.forEach((fixture) => {
+        if (dirtyRef.current[fixture.id]) next[fixture.id] = current[fixture.id] || ''
+        else {
+          const saved = game.myPredictions.find((prediction) => prediction.fixtureId === fixture.id)
+          next[fixture.id] = saved?.score || ''
+        }
+      })
+      return next
+    })
+  }, [savedKey, game.requiredFixtures, game.myPredictions])
+
+  function onScore(fixtureId, score) {
+    if (game.locked) return
+    setDraft((current) => ({ ...current, [fixtureId]: score }))
+    dirtyRef.current[fixtureId] = true
+    clearTimeout(timers.current[fixtureId])
+    if (!parseScore(score)) {
+      setNote('Enter both numbers. This stays private until you lock in.')
+      return
+    }
+    timers.current[fixtureId] = setTimeout(async () => {
+      try {
+        setNote('Saving privately…')
+        await game.savePrediction(fixtureId, score)
+        dirtyRef.current[fixtureId] = false
+        setNote('Saved privately. Other players cannot see this yet.')
+        setError('')
+      } catch (err) {
+        setError(friendlyError(err))
+        setNote('')
+      }
+    }, 450)
   }
 
-  const submit = () => {
-    setState({
-      ...state,
-      predictions: { ...state.predictions, [user.id]: preds },
-      locked: { ...state.locked, [user.id]: true }
-    })
-    setJustLocked(true)
-    setTimeout(() => setJustLocked(false), 800)
+  const readyToLock = game.requiredFixtures.every((fixture) => parseScore(draft[fixture.id] || ''))
+
+  async function confirmLock() {
+    setBusy(true)
+    setError('')
+    try {
+      for (const fixture of game.requiredFixtures) {
+        clearTimeout(timers.current[fixture.id])
+        await game.savePrediction(fixture.id, draft[fixture.id])
+        dirtyRef.current[fixture.id] = false
+      }
+      await game.lockPredictions()
+      setConfirming(false)
+      setNote('Locked in. Everyone can see these picks, and they cannot be edited.')
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <div>
-      <Nav state={state} setState={setState} />
-      <div className="card">
-        <h2 style={{ fontSize: 14 }}>{locked ? 'LOCKED PREDICTIONS' : 'MAKE PREDICTIONS'}</h2>
-        <p style={{ margin: '12px 0', color: '#ffd700' }}>
-          {user.wildcard ? 'WILDCARD - ALL 10 GAMES' : 'SELECTED FIXTURES'}
+      <section className="card">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">Week {game.currentWeek}</p>
+            <h1>{game.locked ? 'Locked predictions' : 'Make predictions'}</h1>
+          </div>
+          <StatusPill status={game.status} />
+        </div>
+        <p className="lede">
+          {game.me.wildcard
+            ? 'Wildcard: predict all the games this week.'
+            : 'Predict the selected fixtures. Lock in when you are happy.'}
         </p>
-        {fixturesToShow.map(f => (
-          <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-            <span style={{ width: 220, fontSize: 10 }}>{f.home} vs {f.away}</span>
-            <input
-              value={preds[f.id] || ''}
-              onChange={e => update(f.id, e.target.value)}
-              placeholder="2-1"
-              disabled={locked}
-              style={{ width: 90, padding: 8, background: '#000', border: '2px solid #fff', color: '#fff', fontSize: 12 }}
-            />
-          </div>
-        ))}
-        {!locked && <button className="btn" onClick={submit} style={{ marginTop: 12 }}>LOCK IN</button>}
-        {locked && <div className="locked-banner">LOCKED</div>}
-        {justLocked && <div className="bounce" style={{ marginTop: 10 }}>LOCKED!</div>}
 
-        <h3 style={{ marginTop: 32, fontSize: 12 }}>ALL LOCKED PREDICTIONS</h3>
-        {state.users.filter(u => state.locked[u.id]).map(u => (
-          <div key={u.id} style={{ marginTop: 12, padding: 12, background: '#000', borderLeft: `4px solid ${u.colour}` }}>
-            <strong style={{ color: u.colour }}>{u.name}</strong>
-            <div style={{ fontSize: 10, marginTop: 6 }}>
-              {Object.entries(state.predictions[u.id] || {}).map(([fid, score]) => {
-                const f = state.fixtures.find(x => x.id === Number(fid))
-                return <div key={fid}>{f?.home} vs {f?.away}: {score}</div>
-              })}
+        {game.requiredFixtures.length === 0 && <p className="empty">No fixtures to predict this week.</p>}
+
+        <div className="predict-list">
+          {game.requiredFixtures.map((fixture) => (
+            <div key={fixture.id} className="predict-row">
+              <div>
+                <span className="kickoff">{fixture.kickoffLabel}</span>
+                <strong>{fixture.home}</strong>
+                <span className="vs">vs</span>
+                <strong>{fixture.away}</strong>
+              </div>
+              <ScoreInputs score={draft[fixture.id] || ''} onChange={(score) => onScore(fixture.id, score)} disabled={game.locked} />
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+
+        {note && <p className="note" role="status">{note}</p>}
+        {error && <p className="form-error" role="alert">{error}</p>}
+
+        {!game.locked && (
+          <button type="button" className="btn lock-btn" disabled={!readyToLock} onClick={() => setConfirming(true)}>
+            Lock in
+          </button>
+        )}
+        {game.locked && <p className="locked-banner">Locked. These picks are live for the league.</p>}
+      </section>
+
+      <section className="card">
+        <p className="live-label">Live</p>
+        <WeekPicks
+          fixtures={game.fixtures}
+          players={game.players}
+          publishedPicks={game.publishedPicks}
+          entries={game.entries}
+          meId={game.me.id}
+        />
+      </section>
+
+      {confirming && (
+        <ConfirmDialog
+          title="Lock these in?"
+          confirmLabel="Lock in"
+          busy={busy}
+          onCancel={() => setConfirming(false)}
+          onConfirm={confirmLock}
+        >
+          <p>Everyone will be able to see these picks. You will not be able to change them.</p>
+          <ul className="confirm-list">
+            {game.requiredFixtures.map((fixture) => (
+              <li key={fixture.id}>
+                <span>{fixture.home} vs {fixture.away}</span>
+                <strong>{draft[fixture.id]}</strong>
+              </li>
+            ))}
+          </ul>
+        </ConfirmDialog>
+      )}
     </div>
   )
 }

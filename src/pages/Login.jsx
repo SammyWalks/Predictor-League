@@ -1,37 +1,47 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
+import { useGame } from '../context/GameContext'
+import { friendlyError } from '../supabase'
 
-export default function Login({ state, setState }) {
+export default function Login() {
+  const { me, ready, login } = useGame()
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
-  const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const handleLogin = (e) => {
-    e.preventDefault()
-    const user = state.users.find(u => u.name.toLowerCase() === name.toLowerCase() && u.password === password)
-    if (user) {
-      setState({ ...state, currentUserId: user.id })
-      navigate('/')
-    } else {
-      alert('Invalid name or password (try "office")')
+  if (ready && me) return <Navigate to="/" replace />
+
+  async function onSubmit(event) {
+    event.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await login(name, password)
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
-    <div className="card" style={{ maxWidth: 400, margin: '60px auto' }}>
-      <h2 style={{ marginBottom: 20 }}>Log in</h2>
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: 12 }}>
-          <label>Name</label>
-          <input value={name} onChange={e => setName(e.target.value)} required style={{ width: '100%', padding: 10, marginTop: 4, borderRadius: 8, background: '#0f1419', border: '1px solid #2f3336', color: 'white' }} />
-        </div>
-        <div style={{ marginBottom: 20 }}>
-          <label>Password</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required style={{ width: '100%', padding: 10, marginTop: 4, borderRadius: 8, background: '#0f1419', border: '1px solid #2f3336', color: 'white' }} />
-        </div>
-        <button className="btn" type="submit">Log in</button>
+    <div className="container login-wrap">
+      <form className="card login-card" onSubmit={onSubmit}>
+        <p className="eyebrow">Office Predictor League</p>
+        <h1>Log in</h1>
+        <label>
+          Name
+          <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="username" required />
+        </label>
+        <label>
+          Password
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required />
+        </label>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        <button className="btn" type="submit" disabled={busy}>{busy ? 'Checking…' : 'Log in'}</button>
+        <p className="hint">Shared office password: office</p>
       </form>
-      <p style={{ marginTop: 16, color: '#71767b', fontSize: 14 }}>Demo password for all: <strong>office</strong></p>
     </div>
   )
 }
