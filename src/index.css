@@ -1,20 +1,17 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body, button, input, select, textarea, table, label {
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.7;
+}
 body {
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   background: #0a0a1a url('/pitch.png') center center / cover no-repeat fixed;
   color: #ffffff;
   min-height: 100vh;
-  font-size: 16px;
-  line-height: 1.45;
+  font-size: 10px;
 }
-h1, h2, .btn, .topnav, .bottomnav, .eyebrow, .pill, .locked-banner, .tag {
-  font-family: 'Press Start 2P', monospace;
-  line-height: 1.5;
-}
-h1 { font-size: 16px; margin-bottom: 12px; }
-h2 { font-size: 12px; margin-bottom: 14px; }
+h1 { font-size: 13px; margin-bottom: 12px; line-height: 1.6; }
+h2 { font-size: 11px; margin-bottom: 14px; line-height: 1.6; }
 a { color: #ffd700; }
-button, input, select { font-family: "Trebuchet MS", "Segoe UI", sans-serif; }
 .container { max-width: 980px; margin: 0 auto; padding: 16px 16px 96px; }
 .card {
   background: rgba(0, 0, 0, 0.72);
@@ -82,7 +79,7 @@ button, input, select { font-family: "Trebuchet MS", "Segoe UI", sans-serif; }
   font-size: 8px;
 }
 .bottomnav a.active { color: #ffd700; background: #161616; }
-label { display: block; margin: 12px 0; font-size: 14px; }
+label { display: block; margin: 12px 0; font-size: 10px; }
 input[type="text"], input[type="password"], input:not([type]), input[type="color"] {
   width: 100%;
 }
@@ -92,13 +89,13 @@ input {
   color: #fff;
   border: 2px solid #fff;
   padding: 10px;
-  font-size: 16px;
+  font-size: 12px;
   min-height: 44px;
 }
 input[type="color"] { padding: 4px; height: 48px; }
 .form-error { color: #fecaca; background: #450a0a; border: 2px solid #f87171; padding: 10px; margin: 10px 0; }
 .hero { text-align: left; }
-.hero-points { font-size: 20px; margin: 8px 0 12px; }
+.hero-points { font-size: 12px; margin: 8px 0 12px; }
 .hero-actions { margin-top: 16px; }
 .pill {
   display: inline-block;
@@ -120,7 +117,23 @@ input[type="color"] { padding: 4px; height: 48px; }
   border-bottom: 2px solid rgba(255,255,255,0.25);
 }
 .predict-row strong, .fixture-card strong { display: block; }
-.kickoff, .vs { display: block; color: #ffd700; font-size: 13px; }
+.score-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "kick kick kick"
+    "home scores away";
+  gap: 8px 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 2px solid rgba(255,255,255,0.25);
+}
+.score-line .kickoff { grid-area: kick; font-size: 8px; }
+.score-line .home { grid-area: home; text-align: right; }
+.score-line .away { grid-area: away; text-align: left; }
+.score-line .score-pair { grid-area: scores; justify-content: center; }
+.score-line .team { font-size: 8px; line-height: 1.5; }
+.kickoff, .vs { display: block; color: #ffd700; font-size: 8px; }
 .vs { color: #fff; margin: 2px 0; }
 .score-pair, .admin-score { display: flex; align-items: center; gap: 6px; }
 .score-pair input, .admin-score input { width: 58px; text-align: center; margin-top: 0; }
@@ -137,9 +150,21 @@ input[type="color"] { padding: 4px; height: 48px; }
 .table-wrap { overflow-x: auto; }
 table.league { width: 100%; border-collapse: collapse; min-width: 280px; }
 table.league th, table.league td { text-align: left; padding: 12px 8px; border-bottom: 2px solid rgba(255,255,255,0.3); }
-table.league th { color: #ffd700; font-size: 9px; }
-table.league td { font-size: 16px; }
-table.league tr.me { background: rgba(255, 215, 0, 0.12); }
+table.league th { color: #ffd700; font-size: 8px; }
+table.league td { font-size: 8px; line-height: 1.6; }
+table.results-grid { width: max-content; min-width: 100%; border-collapse: collapse; }
+table.results-grid th, table.results-grid td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+  font-size: 8px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+table.results-grid th { color: #ffd700; }
+table.results-grid tr.not-locked { opacity: 0.45; }
+.round-list { list-style: none; }
+.round-list .check { margin: 8px 0; }
 table.league .points { font-weight: 700; }
 .player-name { font-weight: 700; }
 .tag {
@@ -190,7 +215,6 @@ table.league .points { font-weight: 700; }
   .logout-mobile { display: none; }
   .modal-back { align-items: center; }
   .predict-row { align-items: center; }
-  .predict-row strong, .vs { display: inline; }
-  .vs { margin: 0 6px; }
+  .score-line .team { font-size: 10px; }
   .kickoff { margin-bottom: 4px; }
 }

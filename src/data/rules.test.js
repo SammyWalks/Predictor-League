@@ -140,6 +140,17 @@ test('tuesday runner calculates even if the feed fails, and skips when env is mi
   assert.match(scoringMessage(result.body), /No locked predictions/)
 })
 
+test('full names replace the wildcard badge', () => {
+  assert.equal(PLAYERS.find((player) => player.id === 'annabel').name, 'Annabel Mackereth')
+  assert.equal(PLAYERS.find((player) => player.id === 'sophie').name, 'Sophie Brookes')
+  assert.equal(PLAYERS.some((player) => player.wildcard), false)
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118140000_names_colours_selected_only.sql', import.meta.url), 'utf8')
+  assert.match(sql, /Annabel Mackereth/)
+  assert.match(sql, /Sophie Brookes/)
+  assert.match(sql, /set default '#94a3b8'/)
+  assert.match(sql, /not in this week/)
+})
+
 test('removal script only deletes Kieran and the migration does not seed him', () => {
   const removal = readFileSync(new URL('../../supabase/migrations/20261118120100_remove_kieran_savage.sql', import.meta.url), 'utf8')
   const migration = readFileSync(new URL('../../supabase/migrations/20261118120000_lock_in_and_scoring.sql', import.meta.url), 'utf8')

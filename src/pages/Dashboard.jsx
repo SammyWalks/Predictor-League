@@ -22,13 +22,12 @@ export default function Dashboard() {
 
       <section className="card">
         <h2>League table</h2>
-        <LeagueTable players={game.players} publishedPicks={game.publishedPicks} meId={game.me.id} />
-        <p className="hint"><Link to="/table">Open the full table</Link></p>
+        <LeagueTable players={game.players} publishedPicks={game.publishedPicks.filter((pick) => selected.some((fixture) => fixture.id === pick.fixtureId))} />
       </section>
 
       <section className="card">
         <h2>Selected fixtures</h2>
-        <p className="lede">Everyone predicts these. Wildcard players also predict the rest of the round.</p>
+        <p className="lede">Everyone predicts these games.</p>
         <ul className="fixture-mini">
           {selected.map((fixture) => (
             <li key={fixture.id}>

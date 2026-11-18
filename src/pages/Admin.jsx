@@ -113,6 +113,29 @@ export default function Admin() {
     }
   }
 
+  async function toggleSelected(fixture) {
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      await game.adminSaveFixture({
+        id: fixture.id,
+        week: fixture.week,
+        home: fixture.home,
+        away: fixture.away,
+        kickoffLabel: fixture.kickoffLabel,
+        hardest: !fixture.hardest,
+      })
+      setMessage(fixture.hardest
+        ? `${fixture.home} vs ${fixture.away} is out of this week's predictions.`
+        : `${fixture.home} vs ${fixture.away} is in this week's predictions.`)
+    } catch (err) {
+      setError(friendlyError(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function addFixture(event) {
     event.preventDefault()
     setBusy(true)
@@ -192,6 +215,26 @@ export default function Admin() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="card">
+        <h2>This week's round</h2>
+        <p className="lede">Tick the games everyone predicts. Unticked games stay off the prediction screen and the results table.</p>
+        <ul className="round-list">
+          {game.fixtures.map((fixture) => (
+            <li key={fixture.id}>
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={fixture.hardest}
+                  disabled={busy}
+                  onChange={() => toggleSelected(fixture)}
+                />
+                <span>{fixture.kickoffLabel} {fixture.home} vs {fixture.away}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="card">

@@ -53,7 +53,8 @@ export default function Profile() {
 
   return (
     <div className="card profile-card">
-      <h1>Profile</h1>
+      <h1>Edit profile</h1>
+      <p className="lede">Your name colour is the colour of your name in the league table.</p>
       <div className="avatar-row">
         <img src={avatar || 'https://placehold.co/80x80/111/fff?text=PL'} alt="" style={{ borderColor: colour }} />
       </div>

@@ -111,9 +111,10 @@ export function GameProvider({ children }) {
     const entries = (data?.entries || []).filter((entry) => entry.week === currentWeek)
     const myPredictions = (data?.myPredictions || []).filter((prediction) => prediction.week === currentWeek)
     const locked = Boolean(me && entries.some((entry) => entry.userId === me.id))
-    const requiredFixtures = fixtures.filter((fixture) => me?.wildcard || fixture.hardest)
-    const mineScored = locked && myPredictions.length > 0 && myPredictions.every((prediction) => prediction.pointsAwarded != null)
-    const minePartial = locked && myPredictions.some((prediction) => prediction.pointsAwarded != null) && !mineScored
+    const requiredFixtures = fixtures.filter((fixture) => fixture.hardest)
+    const requiredPredictions = myPredictions.filter((prediction) => requiredFixtures.some((fixture) => fixture.id === prediction.fixtureId))
+    const mineScored = locked && requiredPredictions.length > 0 && requiredPredictions.every((prediction) => prediction.pointsAwarded != null)
+    const minePartial = locked && requiredPredictions.some((prediction) => prediction.pointsAwarded != null) && !mineScored
 
     return {
       ready,
