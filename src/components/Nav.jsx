@@ -6,6 +6,8 @@ const LINKS = [
   { to: '/predict', label: 'Predict', short: 'Picks' },
   { to: '/table', label: 'Table', short: 'Table' },
   { to: '/results', label: 'Results', short: 'Week' },
+  { to: '/history', label: 'History', short: 'Past' },
+  { to: '/stats', label: 'Stats', short: 'Stats' },
   { to: '/profile', label: 'Profile', short: 'You' },
 ]
 

@@ -91,6 +91,7 @@ export async function adminSaveFixture(token, fixture) {
     p_away: fixture.away,
     p_kickoff: fixture.kickoffLabel || '',
     p_hardest: Boolean(fixture.hardest),
+    p_kickoff_at: fixture.kickoffAt || null,
   })
 }
 

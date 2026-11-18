@@ -66,17 +66,19 @@ a { color: #ffd700; }
   right: 0;
   bottom: 0;
   display: flex;
+  overflow-x: auto;
   background: #000;
   border-top: 3px solid #fff;
   z-index: 20;
 }
 .bottomnav a {
-  flex: 1;
+  flex: 1 0 auto;
+  min-width: 52px;
   text-align: center;
   color: #fff;
   text-decoration: none;
   padding: 12px 4px 16px;
-  font-size: 8px;
+  font-size: 7px;
 }
 .bottomnav a.active { color: #ffd700; background: #161616; }
 label { display: block; margin: 12px 0; font-size: 10px; }
@@ -194,6 +196,45 @@ table.league .points { font-weight: 700; }
 .pick-list, .fixture-mini, .suggest-list, .confirm-list { list-style: none; }
 .pick-score, .pick-points { font-variant-numeric: tabular-nums; }
 .pick-list li.me { background: rgba(255, 215, 0, 0.1); margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
+.countdown { margin-top: 12px; }
+.countdown-digits { display: flex; justify-content: center; gap: 8px; color: #ffd700; }
+.countdown-done { color: #f59e0b; }
+.trophy {
+  background: #111;
+  border: 4px solid #ffd700;
+  box-shadow: 6px 6px 0 #000;
+  text-align: center;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.trophy-names { color: #ffd700; font-size: 14px; margin: 8px 0; }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px; }
+.badges.compact { display: inline-flex; margin: 0 0 0 6px; vertical-align: middle; }
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid #000;
+  padding: 3px 4px;
+  font-size: 8px;
+  line-height: 1;
+}
+.badge-perfect { background: #ffd700; color: #000; }
+.badge-streak { background: #f97316; color: #000; }
+.badge-bottled { background: #64748b; color: #fff; }
+.badge-top { background: #10b981; color: #000; }
+.form { display: inline-flex; gap: 3px; }
+.form-block { width: 10px; height: 10px; border: 2px solid #000; display: inline-block; }
+.form-empty { background: #222; }
+.form-zero { background: #e11d48; }
+.form-low { background: #f59e0b; }
+.form-mid { background: #ffd700; }
+.form-high { background: #10b981; }
+.arrow { display: inline-block; width: 0; height: 0; margin-right: 4px; vertical-align: middle; }
+.arrow-up { border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 7px solid #10b981; }
+.arrow-down { border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 7px solid #e11d48; }
+.arrow-same { width: 8px; height: 3px; background: #94a3b8; border: 0; }
+.records p { margin: 8px 0; }
 .live-label { color: #10b981; font-family: 'Press Start 2P', monospace; font-size: 8px; margin-bottom: 8px; }
 .live-label::before { content: ''; display: inline-block; width: 8px; height: 8px; background: #10b981; margin-right: 8px; }
 .modal-back {

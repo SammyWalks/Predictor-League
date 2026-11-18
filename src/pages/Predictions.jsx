@@ -6,6 +6,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import WeekPicks from '../components/WeekPicks'
 import { friendlyError } from '../supabase'
 import { parseScore } from '../data/scoring'
+import Countdown from '../components/Countdown'
 
 export default function Predictions() {
   const game = useGame()
@@ -88,6 +89,7 @@ export default function Predictions() {
           <StatusPill status={game.status} />
         </div>
         <p className="lede">Predict the selected fixtures. Lock in when you are happy.</p>
+        <Countdown fixtures={game.requiredFixtures} />
 
         {game.requiredFixtures.length === 0 && <p className="empty">No fixtures are selected for this week yet.</p>}
 

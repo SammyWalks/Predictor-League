@@ -107,8 +107,10 @@ export function GameProvider({ children }) {
     const currentWeek = data?.currentWeek ?? null
     const fixtures = (data?.fixtures || []).filter((fixture) => fixture.week === currentWeek)
     const allFixtures = data?.fixtures || []
-    const publishedPicks = (data?.publishedPicks || []).filter((pick) => pick.week === currentWeek)
-    const entries = (data?.entries || []).filter((entry) => entry.week === currentWeek)
+    const allPicks = data?.publishedPicks || []
+    const publishedPicks = allPicks.filter((pick) => pick.week === currentWeek)
+    const allEntries = data?.entries || []
+    const entries = allEntries.filter((entry) => entry.week === currentWeek)
     const myPredictions = (data?.myPredictions || []).filter((prediction) => prediction.week === currentWeek)
     const locked = Boolean(me && entries.some((entry) => entry.userId === me.id))
     const requiredFixtures = fixtures.filter((fixture) => fixture.hardest)
@@ -128,7 +130,9 @@ export function GameProvider({ children }) {
       leagueId: data?.leagueId || '4328',
       fixtures,
       allFixtures,
+      allPicks,
       publishedPicks,
+      allEntries,
       entries,
       myPredictions,
       locked,

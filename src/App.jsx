@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard'
 import Predictions from './pages/Predictions'
 import Table from './pages/Table'
 import Results from './pages/Results'
+import History from './pages/History'
+import Stats from './pages/Stats'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 
@@ -50,6 +52,8 @@ function Shell() {
         <Route path="/predict" element={<Predictions />} />
         <Route path="/table" element={<Table />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/stats" element={<Stats />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
