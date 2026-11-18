@@ -108,6 +108,8 @@ export function GameProvider({ children }) {
     const fixtures = (data?.fixtures || []).filter((fixture) => fixture.week === currentWeek)
     const allFixtures = data?.fixtures || []
     const allPicks = data?.publishedPicks || []
+    const revealedWeeks = Array.isArray(data?.revealedWeeks) ? data.revealedWeeks : null
+    const picksRevealed = typeof data?.picksRevealed === 'boolean' ? data.picksRevealed : true
     const publishedPicks = allPicks.filter((pick) => pick.week === currentWeek)
     const allEntries = data?.entries || []
     const entries = allEntries.filter((entry) => entry.week === currentWeek)
@@ -132,6 +134,8 @@ export function GameProvider({ children }) {
       allFixtures,
       allPicks,
       publishedPicks,
+      picksRevealed,
+      revealedWeeks,
       allEntries,
       entries,
       myPredictions,

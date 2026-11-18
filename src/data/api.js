@@ -53,8 +53,10 @@ export async function updateProfile(token, profile) {
     p_token: token,
     p_name: profile.name,
     p_colour: profile.colour,
-    p_avatar: profile.avatar || '',
     p_sprite: profile.sprite || 'striker',
+    p_shirt: profile.kitShirt,
+    p_shorts: profile.kitShorts,
+    p_socks: profile.kitSocks,
   })
 }
 

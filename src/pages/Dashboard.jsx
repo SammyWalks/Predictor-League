@@ -7,7 +7,8 @@ import { playerOfTheWeek } from '../data/extras'
 import Ball from '../components/Ball'
 import PixelArt from '../components/PixelArt'
 import XpBar from '../components/XpBar'
-import Sprite from '../components/Sprite'
+import Sprite, { kitProps } from '../components/Sprite'
+import PicksHidden from '../components/PicksHidden'
 import { rivalId, setRival, seenAchievements, markAchievement } from '../arcade/settings'
 import { badgesFor } from '../data/extras'
 import { useEffect, useState } from 'react'
@@ -53,7 +54,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      {trophy && (
+      {trophy && game.picksRevealed && (
         <section className="trophy">
           <PixelArt
             name={['trophy-lift', 'crowd-celebration', 'celebration-knee-slide'][trophy.week % 3]}
@@ -77,6 +78,7 @@ export default function Dashboard() {
           <Link className="btn" to="/predict">{game.locked ? 'See locked picks' : 'Make predictions'}</Link>
           {game.me.isAdmin && <Link className="btn secondary" to="/admin">Enter scores</Link>}
         </div>
+        {!game.picksRevealed && <PicksHidden />}
       </section>
 
       {toast && <p className="toast" role="status">Achievement unlocked: {toast}</p>}
@@ -98,12 +100,13 @@ export default function Dashboard() {
         </label>
         {rivalPlayer && (
           <div className="vs">
-            <div><Sprite kit={game.me.sprite} colour={game.me.colour} size={48} /><p>{game.me.name}</p></div>
+            <div><Sprite {...kitProps(game.me)} size={48} /><p>{game.me.name}</p></div>
             <strong>VS</strong>
-            <div><Sprite kit={rivalPlayer.sprite} colour={rivalPlayer.colour} size={48} /><p>{rivalPlayer.name}</p></div>
+            <div><Sprite {...kitProps(rivalPlayer)} size={48} /><p>{rivalPlayer.name}</p></div>
           </div>
         )}
-        {rivalPlayer && mineWeek.length > 0 && rivalWeek.length > 0 && (
+        {rivalPlayer && !game.picksRevealed && <PicksHidden />}
+        {rivalPlayer && game.picksRevealed && mineWeek.length > 0 && rivalWeek.length > 0 && (
           <p className="note">{myWeekPts === rivalWeekPts ? 'Draw' : myWeekPts > rivalWeekPts ? `${game.me.name} takes the week` : `${rivalPlayer.name} takes the week`}</p>
         )}
       </section>

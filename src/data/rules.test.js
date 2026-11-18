@@ -7,6 +7,7 @@ import { matchFixtures, scoresToApply, finishedScore } from './football.js'
 import { FIXTURES } from './fixtures.js'
 import { PLAYERS } from './players.js'
 import { createStore } from './mockStore.js'
+import { weekRevealed } from './visibility.js'
 import { runScoreTuesday } from '../../netlify/functions/_shared/run-tuesday.js'
 
 test('exact score is 3, right result is 1, wrong result is 0', () => {
@@ -78,10 +79,14 @@ test('drafts stay private and a second calculate does not double points', () => 
   store.lockPredictions(sam.token)
   assert.throws(() => store.savePrediction(sam.token, 3, '3-0'), /locked/i)
 
+  for (const fixture of store.loadGame(sam.token).fixtures.filter((item) => item.hardest)) {
+    store.adminSaveFixture(sam.token, { ...fixture, kickoffAt: '2099-01-01T12:00:00Z' })
+  }
   const afterLock = store.loadGame(saj.token)
-  assert.equal(afterLock.publishedPicks.length, 3)
+  assert.equal(afterLock.picksRevealed, false)
+  assert.equal(afterLock.publishedPicks.length, 0)
   assert.equal(afterLock.myPredictions.length, 1)
-  assert.equal(afterLock.publishedPicks.some((pick) => pick.score === '0-0'), false)
+  assert.equal(afterLock.myPredictions[0].score, '0-0')
 
   store.adminSaveResult(sam.token, 3, 1, 0)
   store.adminSaveResult(sam.token, 4, 0, 1)
@@ -174,6 +179,104 @@ test('tuesday runner calculates even if the feed fails, and skips when env is mi
   assert.equal(calls.includes('scheduled_apply_scores'), false)
   assert.match(result.body.fetchError, /feed down/)
   assert.match(scoringMessage(result.body), /No locked predictions/)
+})
+
+test('other players picks stay hidden until you lock in, the week is scored, or the deadline has passed', () => {
+  const store = createStore()
+  const sam = store.login('Sam Walker', 'office')
+  const annabel = store.login('Annabel Mackereth', 'office')
+  for (const fixture of store.loadGame(sam.token).fixtures.filter((item) => item.hardest)) {
+    store.adminSaveFixture(sam.token, { ...fixture, kickoffAt: '2099-01-01T12:00:00Z' })
+  }
+  store.savePrediction(sam.token, 3, '1-0')
+  store.savePrediction(sam.token, 4, '2-0')
+  store.savePrediction(sam.token, 9, '0-1')
+  store.lockPredictions(sam.token)
+
+  const hidden = store.loadGame(annabel.token)
+  assert.equal(hidden.picksRevealed, false)
+  assert.equal(hidden.publishedPicks.some((pick) => pick.userId === 'sam'), false)
+  assert.equal(store.loadGame(sam.token).publishedPicks.filter((pick) => pick.userId === 'sam').length, 3)
+
+  store.savePrediction(annabel.token, 3, '1-1')
+  store.savePrediction(annabel.token, 4, '1-1')
+  store.savePrediction(annabel.token, 9, '1-1')
+  const ownDraft = store.loadGame(annabel.token)
+  assert.equal(ownDraft.myPredictions[0].score, '1-1')
+  assert.equal(ownDraft.publishedPicks.some((pick) => pick.userId === 'sam'), false)
+
+  store.lockPredictions(annabel.token)
+  const open = store.loadGame(annabel.token)
+  assert.equal(open.picksRevealed, true)
+  assert.equal(open.publishedPicks.filter((pick) => pick.userId === 'sam').length, 3)
+  assert.equal(open.me.points, 0)
+
+  const scored = createStore()
+  const admin = scored.login('Sam Walker', 'office')
+  const viewer = scored.login('Sophie Brookes', 'office')
+  for (const fixture of scored.loadGame(admin.token).fixtures.filter((item) => item.hardest)) {
+    scored.adminSaveFixture(admin.token, { ...fixture, kickoffAt: '2099-01-01T12:00:00Z' })
+  }
+  scored.savePrediction(admin.token, 3, '1-0')
+  scored.savePrediction(admin.token, 4, '1-0')
+  scored.savePrediction(admin.token, 9, '1-0')
+  scored.lockPredictions(admin.token)
+  assert.equal(scored.loadGame(viewer.token).publishedPicks.length, 0)
+  for (const id of [3, 4, 9]) scored.adminSaveResult(admin.token, id, 1, 0)
+  assert.equal(scored.loadGame(viewer.token).publishedPicks.filter((pick) => pick.userId === 'sam').length, 3)
+  assert.equal(scored.loadGame(viewer.token).me.points, 0)
+
+  const late = createStore()
+  const lateAdmin = late.login('Sam Walker', 'office')
+  const lateViewer = late.login('Matthew Iles', 'office')
+  for (const fixture of late.loadGame(lateAdmin.token).fixtures.filter((item) => item.hardest)) {
+    late.adminSaveFixture(lateAdmin.token, { ...fixture, kickoffAt: '2099-01-01T12:00:00Z' })
+  }
+  late.savePrediction(lateAdmin.token, 3, '2-2')
+  late.savePrediction(lateAdmin.token, 4, '2-2')
+  late.savePrediction(lateAdmin.token, 9, '2-2')
+  late.lockPredictions(lateAdmin.token)
+  assert.equal(late.loadGame(lateViewer.token).picksRevealed, false)
+  for (const fixture of late.loadGame(lateAdmin.token).fixtures.filter((item) => item.hardest)) {
+    late.adminSaveFixture(lateAdmin.token, { ...fixture, kickoffAt: '2000-01-01T12:00:00Z' })
+  }
+  assert.equal(late.loadGame(lateViewer.token).picksRevealed, true)
+  assert.equal(late.loadGame(lateViewer.token).publishedPicks.length, 3)
+  assert.equal(late.loadGame(lateViewer.token).me.points, 20)
+
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118200000_kit_and_pick_privacy.sql', import.meta.url), 'utf8')
+  assert.match(sql, /private\.picks_visible/)
+  assert.match(sql, /pp\.user_id = actor\.id or private\.picks_visible/)
+  assert.match(sql, /revoke select on public\.published_picks/)
+  assert.doesNotMatch(sql, /set points/i)
+  assert.equal(weekRevealed({ user: { id: 'a', isAdmin: true }, week: 1, fixtures: [], entries: [] }), true)
+})
+
+test('kit colours save without sending or clearing an avatar', () => {
+  const store = createStore()
+  const sam = store.login('Sam Walker', 'office')
+  store.updateProfile(sam.token, {
+    name: 'Sam Walker',
+    colour: '#1d9bf0',
+    sprite: 'captain',
+    kitShirt: '#112233',
+    kitShorts: '#ffffff',
+    kitSocks: '#445566',
+  })
+  const me = store.loadGame(sam.token).me
+  assert.equal(me.kitShirt, '#112233')
+  assert.equal(me.kitShorts, '#ffffff')
+  assert.equal(me.kitSocks, '#445566')
+  assert.equal(me.sprite, 'captain')
+  assert.equal(me.colour, '#1d9bf0')
+  assert.equal(me.points, 21)
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118200000_kit_and_pick_privacy.sql', import.meta.url), 'utf8')
+  assert.match(sql, /kit_shirt/)
+  assert.match(sql, /kit_shorts/)
+  assert.match(sql, /kit_socks/)
+  assert.match(sql, /p_avatar text default null/)
+  assert.match(sql, /when p_avatar is null then avatar/)
+  assert.match(sql, /"kitShirt"/)
 })
 
 test('full names replace the wildcard badge', () => {

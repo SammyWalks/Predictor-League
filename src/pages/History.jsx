@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useGame } from '../context/GameContext'
 import ResultsGrid from '../components/ResultsGrid'
 import Ball from '../components/Ball'
+import PicksHidden from '../components/PicksHidden'
 
 export default function History() {
   const game = useGame()
@@ -25,7 +26,11 @@ export default function History() {
           {weeks.map((item) => <option key={item} value={item}>Week {item}</option>)}
         </select>
       </label>
-      <ResultsGrid fixtures={fixtures} players={game.players} publishedPicks={picks} entries={entries} />
+      {game.revealedWeeks == null || game.revealedWeeks.includes(week) ? (
+        <ResultsGrid fixtures={fixtures} players={game.players} publishedPicks={picks} entries={entries} />
+      ) : (
+        <PicksHidden />
+      )}
     </section>
   )
 }

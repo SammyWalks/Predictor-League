@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import Sprite from './Sprite'
+import Sprite, { kitProps } from './Sprite'
 import { ArtCredit } from './PixelArt'
 
 export default function ArcadeStart({ scores, onStart }) {
@@ -26,7 +26,7 @@ export default function ArcadeStart({ scores, onStart }) {
           {(scores || []).map((row, index) => (
             <li key={row.name}>
               <span>{index + 1}</span>
-              <Sprite kit={row.sprite} colour={row.colour} size={20} />
+              <Sprite {...kitProps(row)} size={20} />
               <span style={{ color: row.colour }}>{row.name}</span>
               <strong>{row.points}</strong>
             </li>
