@@ -124,7 +124,7 @@ export function createStore({ demo = false, persist = false } = {}) {
     const user = token ? userFromToken(token) : null
     return {
       me: user ? publicUser(user) : null,
-      players: state.players.map(publicUser),
+      players: [...state.players].sort((a, b) => a.name.localeCompare(b.name)).map(publicUser),
       fixtures: clone(state.fixtures),
       currentWeek: state.currentWeek,
       season: state.season,

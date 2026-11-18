@@ -46,6 +46,22 @@ test('Kieran Savage is not a player', () => {
   assert.equal(PLAYERS.some((player) => player.id === 'kieran'), false)
 })
 
+test('Karolina is in the mock seed and the insert does not overwrite points', () => {
+  const karolina = PLAYERS.find((player) => player.id === 'karolina')
+  assert.equal(karolina?.name, 'Karolina Bersadska')
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118190000_add_karolina.sql', import.meta.url), 'utf8')
+  const setup = readFileSync(new URL('../../supabase-setup.sql', import.meta.url), 'utf8')
+  assert.match(sql, /'karolina', 'Karolina Bersadska'/)
+  assert.match(sql, /on conflict \(id\) do nothing/)
+  assert.doesNotMatch(sql, /set points/i)
+  assert.match(setup, /Karolina Bersadska/)
+  const store = createStore()
+  const session = store.login('Karolina Bersadska', 'office')
+  const game = store.loadGame(session.token)
+  assert.equal(game.players.some((player) => player.id === 'karolina'), true)
+  assert.equal(game.players.some((player) => player.id === 'kieran'), false)
+})
+
 test('drafts stay private and a second calculate does not double points', () => {
   const store = createStore()
   const sam = store.login('Sam Walker', 'office')

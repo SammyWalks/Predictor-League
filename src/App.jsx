@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { BrowserRouter } from 'react-router-dom'
 import { GameProvider, useGame } from './context/GameContext'
 import Nav from './components/Nav'
+import ArcadeControls from './components/ArcadeControls'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Predictions from './pages/Predictions'
@@ -75,7 +76,14 @@ function Shell() {
         ))}
       </div>
       {secretNote && <p className="note secret-note">Secret theme unlocked</p>}
-      <ArtCredit />
+      <footer className="site-footer">
+        <p className="footer-label">Settings</p>
+        <div className="footer-row">
+          <ArcadeControls />
+          <button type="button" className="settings-toggle logout-toggle" onClick={game.logout}>Log out</button>
+        </div>
+        <ArtCredit />
+      </footer>
     </div>
   )
 }

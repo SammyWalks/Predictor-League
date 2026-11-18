@@ -1,44 +1,54 @@
+import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
-import ArcadeControls from './ArcadeControls'
+import Ball from './Ball'
 import Sprite from './Sprite'
 
 const LINKS = [
-  { to: '/', label: 'Home', short: 'Home' },
-  { to: '/predict', label: 'Predict', short: 'Picks' },
-  { to: '/table', label: 'Table', short: 'Table' },
-  { to: '/results', label: 'Results', short: 'Week' },
-  { to: '/history', label: 'History', short: 'Past' },
-  { to: '/stats', label: 'Stats', short: 'Stats' },
-  { to: '/profile', label: 'Profile', short: 'You' },
+  { to: '/', label: 'Home' },
+  { to: '/predict', label: 'Predict' },
+  { to: '/table', label: 'Table' },
+  { to: '/results', label: 'Results' },
+  { to: '/history', label: 'History' },
+  { to: '/stats', label: 'Stats' },
+  { to: '/profile', label: 'Profile' },
 ]
 
 export default function Nav() {
-  const { me, logout } = useGame()
+  const { me } = useGame()
   const { pathname } = useLocation()
+
+  useEffect(() => {
+    const active = document.querySelector('.tab-row a.active')
+    active?.scrollIntoView({ inline: 'center', block: 'nearest' })
+  }, [pathname])
+
   if (!me) return null
 
+  const links = me.isAdmin ? [...LINKS, { to: '/admin', label: 'Admin' }] : LINKS
+
   return (
-    <>
-      <nav className="topnav">
-        <div className="nav-links">
-          {LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className={pathname === link.to ? 'active' : ''}>{link.label}</Link>
-          ))}
-          {me.isAdmin && <Link to="/admin" className={pathname === '/admin' ? 'active' : ''}>Admin</Link>}
-        </div>
-        <div className="nav-user">
-          <ArcadeControls />
-          <Sprite kit={me.sprite} colour={me.colour} size={22} />
+    <header className="site-header">
+      <div className="brand-row">
+        <Link to="/" className="brand">
+          <Ball />
+          <span className="brand-title">PREDICTOR LEAGUE</span>
+        </Link>
+        <Link to="/profile" className="who">
+          <Sprite kit={me.sprite} colour={me.colour} size={26} />
           <span style={{ color: me.colour }}>{me.name}</span>
-          <button type="button" className="btn btn-small" onClick={logout}>Log out</button>
-        </div>
+        </Link>
+      </div>
+      <nav className="tab-row" aria-label="Sections">
+        {links.map((link) => {
+          const active = pathname === link.to
+          return (
+            <Link key={link.to} to={link.to} className={active ? 'active' : ''} aria-current={active ? 'page' : undefined}>
+              {link.label}
+            </Link>
+          )
+        })}
       </nav>
-      <nav className="bottomnav">
-        {LINKS.map((link) => (
-          <Link key={link.to} to={link.to} className={pathname === link.to ? 'active' : ''}>{link.short}</Link>
-        ))}
-      </nav>
-    </>
+    </header>
   )
 }
