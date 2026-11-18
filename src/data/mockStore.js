@@ -159,6 +159,14 @@ export function createStore({ demo = false, persist = false } = {}) {
       emit()
       return { token }
     },
+    topScores() {
+      return topFive(state.players).map((player) => ({
+        name: player.name,
+        colour: player.colour,
+        points: player.points,
+        sprite: player.sprite || 'striker',
+      }))
+    },
     logout(token) {
       sessions.delete(token)
       emit()
@@ -234,7 +242,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       emit()
       return { ok: true }
     },
-    updateProfile(token, { name, colour, avatar }) {
+    updateProfile(token, { name, colour, avatar, sprite }) {
       const user = userFromToken(token)
       const nextName = String(name || '').trim()
       if (nextName.length < 2) throw new Error('Name is too short')
@@ -242,6 +250,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       user.name = nextName
       user.colour = colour
       user.avatar = String(avatar || '').trim()
+      if (['striker', 'keeper', 'winger', 'captain', 'wall'].includes(sprite)) user.sprite = sprite
       emit()
       return { ok: true }
     },
@@ -461,7 +470,12 @@ function publicUser(user) {
     points: user.points,
     wildcard: Boolean(user.wildcard),
     isAdmin: Boolean(user.isAdmin),
+    sprite: user.sprite || 'striker',
   }
+}
+
+export function topFive(players) {
+  return [...players].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name)).slice(0, 5)
 }
 
 function calculateWeek(state, week, emit) {

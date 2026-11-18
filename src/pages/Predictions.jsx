@@ -9,6 +9,7 @@ import { parseScore } from '../data/scoring'
 import Countdown from '../components/Countdown'
 import Ball from '../components/Ball'
 import PixelArt from '../components/PixelArt'
+import { coin, jingle } from '../arcade/sfx'
 
 export default function Predictions() {
   const game = useGame()
@@ -52,6 +53,7 @@ export default function Predictions() {
         await game.savePrediction(fixtureId, score)
         dirtyRef.current[fixtureId] = false
         setNote('Saved privately. Other players cannot see this yet.')
+        coin()
         setError('')
       } catch (err) {
         setError(friendlyError(err))
@@ -74,6 +76,7 @@ export default function Predictions() {
       await game.lockPredictions()
       setConfirming(false)
       setCelebrating(true)
+      jingle()
       setNote('Locked in. Everyone can see these picks, and they cannot be edited.')
     } catch (err) {
       setError(friendlyError(err))
@@ -101,7 +104,13 @@ export default function Predictions() {
             <p className="empty">No fixtures are selected for this week yet.</p>
           </>
         )}
-        {celebrating && <PixelArt name="siuu-pose" alt="" className="pop-art" />}
+        {celebrating && (
+          <div className="coin-lock">
+            <span className="coin" />
+            <p>Ready player one</p>
+            <PixelArt name="siuu-pose" alt="" className="pop-art" />
+          </div>
+        )}
 
         <div className="predict-list">
           {game.requiredFixtures.map((fixture) => (

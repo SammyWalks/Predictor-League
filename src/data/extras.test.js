@@ -1,6 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { badgesFor, countdownParts, firstKickoff, formFor, movements, playerOfTheWeek } from './extras.js'
+import { levelFor } from '../arcade/levels.js'
 
 const players = [
   { id: 'a', name: 'Ada', points: 10, colour: '#fff' },
@@ -46,6 +48,15 @@ test('form is the last five scored weeks and arrows follow the latest week', () 
   const move = movements(players, picks)
   assert.equal(move.b, 'up')
   assert.ok(['up', 'down', 'same'].includes(move.a))
+})
+
+test('levels climb without rewriting stored points', () => {
+  assert.equal(levelFor(0).title, 'Sunday League')
+  assert.equal(levelFor(70).title, 'Legend')
+  const sql = readFileSync(new URL('../../supabase/migrations/20261118180000_arcade_sprites.sql', import.meta.url), 'utf8')
+  assert.doesNotMatch(sql, /set points/i)
+  assert.match(sql, /sprite/)
+  assert.match(sql, /arcade_top_scores/)
 })
 
 test('deadline is the earliest selected kick-off', () => {

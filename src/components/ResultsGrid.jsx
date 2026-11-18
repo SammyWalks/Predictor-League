@@ -1,3 +1,5 @@
+import Sprite from './Sprite'
+
 function heading(fixture) {
   if (fixture.actualHome != null && fixture.actualAway != null) {
     return `${fixture.home} ${fixture.actualHome}-${fixture.actualAway}`
@@ -34,7 +36,9 @@ export default function ResultsGrid({ fixtures, players, publishedPicks, entries
             const gw = scored.reduce((sum, pick) => sum + pick.pointsAwarded, 0)
             return (
               <tr key={player.id} className={locked ? '' : 'not-locked'}>
-                <td className="player-name" style={{ color: player.colour || '#94a3b8' }}>{player.name}</td>
+                <td className="player-name" style={{ color: player.colour || '#94a3b8' }}>
+                  <Sprite kit={player.sprite} colour={player.colour} size={20} /> {player.name}
+                </td>
                 {locked
                   ? selected.map((fixture) => <td key={fixture.id}>{cell(picks.find((pick) => pick.fixtureId === fixture.id))}</td>)
                   : <td colSpan={selected.length}>not locked in</td>}

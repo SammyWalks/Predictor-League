@@ -1,5 +1,6 @@
 import { badgesFor, formFor, movements, pointsBand } from '../data/extras'
 import Badges from './Badges'
+import Sprite from './Sprite'
 
 export default function LeagueTable({ players, picks }) {
   const arrows = movements(players, picks)
@@ -33,6 +34,7 @@ export default function LeagueTable({ players, picks }) {
                   {index + 1}
                 </td>
                 <td>
+                  <Sprite kit={player.sprite} colour={player.colour} size={22} />
                   <span className="player-name" style={{ color: player.colour || '#94a3b8' }}>{player.name}</span>
                   <Badges badges={badgesFor(player, players, picks)} compact />
                 </td>

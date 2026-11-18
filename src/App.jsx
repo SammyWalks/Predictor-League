@@ -13,6 +13,9 @@ import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import Ball from './components/Ball'
 import { ArtCredit } from './components/PixelArt'
+import { useEffect, useState } from 'react'
+import { applyArcadeClasses, secretOn, setSecret } from './arcade/settings'
+import { konamiTap, useKonami } from './arcade/useKonami'
 
 function Loading({ label }) {
   return (
@@ -24,6 +27,12 @@ function Loading({ label }) {
 
 function Shell() {
   const game = useGame()
+  const [secretNote, setSecretNote] = useState(secretOn())
+  useKonami(() => setSecretNote(true))
+  useEffect(() => {
+    document.documentElement.dataset.scored = game.allPicks?.some((pick) => pick.week === game.currentWeek && pick.pointsAwarded != null) ? '1' : '0'
+    applyArcadeClasses()
+  }, [game.allPicks, game.currentWeek])
   if (!game.ready || (game.loading && !game.me && !game.error)) {
     return <Loading label="Loading the league…" />
   }
@@ -60,6 +69,12 @@ function Shell() {
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <div className="konami-pad" aria-label="Secret code pad">
+        {['up', 'down', 'left', 'right', 'b', 'a'].map((step) => (
+          <button key={step} type="button" onClick={() => konamiTap(step, () => { setSecret(true); setSecretNote(true); applyArcadeClasses() })}>{step}</button>
+        ))}
+      </div>
+      {secretNote && <p className="note secret-note">Secret theme unlocked</p>}
       <ArtCredit />
     </div>
   )

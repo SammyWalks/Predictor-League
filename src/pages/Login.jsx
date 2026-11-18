@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useGame } from '../context/GameContext'
 import { friendlyError } from '../supabase'
 import Ball from '../components/Ball'
 import PixelArt, { ArtCredit } from '../components/PixelArt'
+import ArcadeStart from '../components/ArcadeStart'
+import { arcadeTopScores } from '../data/api'
 
 export default function Login() {
   const { me, ready, login } = useGame()
@@ -11,8 +13,15 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [started, setStarted] = useState(false)
+  const [scores, setScores] = useState([])
+
+  useEffect(() => {
+    arcadeTopScores().then((rows) => setScores(Array.isArray(rows) ? rows : [])).catch(() => setScores([]))
+  }, [])
 
   if (ready && me) return <Navigate to="/" replace />
+  if (!started) return <ArcadeStart scores={scores} onStart={() => setStarted(true)} />
 
   async function onSubmit(event) {
     event.preventDefault()
