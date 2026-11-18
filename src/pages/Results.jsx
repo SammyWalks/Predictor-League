@@ -1,6 +1,7 @@
 import { useGame } from '../context/GameContext'
 import ResultsGrid from '../components/ResultsGrid'
 import Ball from '../components/Ball'
+import PixelArt from '../components/PixelArt'
 
 export default function Results() {
   const game = useGame()
@@ -9,6 +10,7 @@ export default function Results() {
       <p className="eyebrow">Week {game.currentWeek}</p>
       <h1><Ball />Results</h1>
       <p className="lede">Locked predictions show here straight away. Points appear in brackets after the final scores are calculated.</p>
+      {game.entries.length === 0 && <PixelArt name="salute" alt="" className="empty-art" />}
       <ResultsGrid
         fixtures={game.fixtures}
         players={game.players}

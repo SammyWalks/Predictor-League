@@ -8,6 +8,7 @@ import { friendlyError } from '../supabase'
 import { parseScore } from '../data/scoring'
 import Countdown from '../components/Countdown'
 import Ball from '../components/Ball'
+import PixelArt from '../components/PixelArt'
 
 export default function Predictions() {
   const game = useGame()
@@ -16,6 +17,7 @@ export default function Predictions() {
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [celebrating, setCelebrating] = useState(false)
   const dirtyRef = useRef({})
   const timers = useRef({})
 
@@ -71,6 +73,7 @@ export default function Predictions() {
       }
       await game.lockPredictions()
       setConfirming(false)
+      setCelebrating(true)
       setNote('Locked in. Everyone can see these picks, and they cannot be edited.')
     } catch (err) {
       setError(friendlyError(err))
@@ -92,7 +95,13 @@ export default function Predictions() {
         <p className="lede">Predict the selected fixtures. Lock in when you are happy.</p>
         <Countdown fixtures={game.requiredFixtures} />
 
-        {game.requiredFixtures.length === 0 && <p className="empty">No fixtures are selected for this week yet.</p>}
+        {game.requiredFixtures.length === 0 && (
+          <>
+            <PixelArt name="bicycle-kick" alt="" className="empty-art" />
+            <p className="empty">No fixtures are selected for this week yet.</p>
+          </>
+        )}
+        {celebrating && <PixelArt name="siuu-pose" alt="" className="pop-art" />}
 
         <div className="predict-list">
           {game.requiredFixtures.map((fixture) => (

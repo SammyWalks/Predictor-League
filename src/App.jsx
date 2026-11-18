@@ -12,6 +12,7 @@ import Stats from './pages/Stats'
 import Profile from './pages/Profile'
 import Admin from './pages/Admin'
 import Ball from './components/Ball'
+import { ArtCredit } from './components/PixelArt'
 
 function Loading({ label }) {
   return (
@@ -59,6 +60,7 @@ function Shell() {
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ArtCredit />
     </div>
   )
 }

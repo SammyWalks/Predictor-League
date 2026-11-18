@@ -5,6 +5,7 @@ import StatusPill from '../components/StatusPill'
 import Countdown from '../components/Countdown'
 import { playerOfTheWeek } from '../data/extras'
 import Ball from '../components/Ball'
+import PixelArt from '../components/PixelArt'
 
 export default function Dashboard() {
   const game = useGame()
@@ -15,6 +16,11 @@ export default function Dashboard() {
     <div>
       {trophy && (
         <section className="trophy">
+          <PixelArt
+            name={['trophy-lift', 'crowd-celebration', 'celebration-knee-slide'][trophy.week % 3]}
+            alt=""
+            className="trophy-art"
+          />
           <p className="eyebrow">Week {trophy.week}</p>
           <h2><Ball />Player of the week</h2>
           <p className="trophy-names">{trophy.names.join(' and ')}</p>
