@@ -3,11 +3,12 @@ import { useGame } from '../context/GameContext'
 import ScoreInputs from './ScoreInputs'
 import { friendlyError } from '../supabase'
 import { formatScore, parseScore } from '../data/scoring'
+import { playableFixtures } from '../data/round'
 
 export default function AdminPlayerPicks() {
   const game = useGame()
-  const selected = game.fixtures.filter((fixture) => fixture.hardest)
   const [playerId, setPlayerId] = useState(game.players[0]?.id || '')
+  const selected = playableFixtures(game.fixtures, playerId, game.currentWeek, game.weekAllFixtures)
   const [draft, setDraft] = useState({})
   const [locked, setLocked] = useState(false)
   const [message, setMessage] = useState('')

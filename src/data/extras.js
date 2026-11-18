@@ -102,6 +102,8 @@ export function badgesFor(player, players, picks) {
   if (best >= 3) badges.push({ id: 'streak', label: 'Streak' })
   const top = Math.max(...players.map((item) => item.points))
   if (player.points === top) badges.push({ id: 'top', label: 'Top of the league' })
+  const wins = player.h2h?.wins || 0
+  if (wins >= 1) badges.push({ id: 'slayer', label: `Rival Slayer x${wins}`, count: wins })
   return badges
 }
 

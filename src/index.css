@@ -258,17 +258,32 @@ table.league { width: 100%; border-collapse: collapse; min-width: 280px; }
 table.league th, table.league td { text-align: left; padding: 12px 8px; border-bottom: 2px solid rgba(255,255,255,0.3); }
 table.league th { color: #ffd700; font-size: 10px; line-height: 1.7; }
 table.league td { font-size: 10px; line-height: 1.8; }
-table.results-grid { width: max-content; min-width: 100%; border-collapse: collapse; }
+table.results-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
 table.results-grid th, table.results-grid td {
-  text-align: left;
-  padding: 10px 8px;
+  text-align: center;
+  padding: 8px 2px;
   border-bottom: 2px solid rgba(255,255,255,0.3);
-  font-size: 10px;
-  line-height: 1.8;
-  white-space: nowrap;
+  font-size: 8px;
+  line-height: 1.5;
+  overflow: hidden;
 }
 table.results-grid th { color: #ffd700; }
-table.results-grid tr.not-locked { opacity: 0.45; }
+table.results-grid .name-col { text-align: left; width: 22%; font-size: 8px; }
+table.results-grid .gw-col { width: 7%; }
+table.results-grid tr.not-locked { opacity: 0.55; }
+.fix-head { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fix-score { color: #ffffff; }
+.joiner-note { display: block; margin-top: 4px; color: #ffd700; font-size: 8px; line-height: 1.5; }
+.h2h-record { margin: 8px 0 12px; color: #d6d6d6; }
+.results-cards { display: none; }
+.result-card { border-bottom: 2px solid rgba(255,255,255,0.3); padding: 12px 0; }
+.result-card header { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.result-line { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0; }
+.result-line.muted { color: #9a9a9a; }
+@media (max-width: 600px) {
+  .results-table { display: none; }
+  .results-cards { display: block; }
+}
 .round-list { list-style: none; }
 .round-list .check { margin: 8px 0; }
 table.league .points { font-weight: 700; }
@@ -316,6 +331,7 @@ table.league .points { font-weight: 700; }
 .badge-streak { background: #f97316; color: #000; }
 .badge-bottled { background: #64748b; color: #fff; }
 .badge-top { background: #10b981; color: #000; }
+.badge-slayer { background: #ffd700; color: #000; }
 .form { display: inline-flex; gap: 3px; }
 .form-block { width: 10px; height: 10px; border: 2px solid #000; display: inline-block; }
 .form-empty { background: #222; }

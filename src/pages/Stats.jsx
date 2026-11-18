@@ -1,5 +1,6 @@
 import { useGame } from '../context/GameContext'
 import { leagueRecords, seasonRows } from '../data/extras'
+import { h2hLabel } from '../data/h2h'
 import Ball from '../components/Ball'
 
 export default function Stats() {
@@ -25,6 +26,7 @@ export default function Stats() {
               <th>Best</th>
               <th>Avg</th>
               <th>Weeks</th>
+              <th>H2H</th>
             </tr>
           </thead>
           <tbody>
@@ -36,6 +38,7 @@ export default function Stats() {
                 <td>{row.bestWeek == null ? '–' : `W${row.bestWeek} ${row.bestPoints}`}</td>
                 <td>{row.average}</td>
                 <td>{row.lockedWeeks}</td>
+                <td>{h2hLabel(game.players.find((player) => player.id === row.id)?.h2h)}</td>
               </tr>
             ))}
           </tbody>

@@ -3,6 +3,8 @@ import { FIXTURES, CURRENT_WEEK, SEASON, LEAGUE_ID } from './fixtures.js'
 import { formatScore, parseScore, settlePick } from './scoring.js'
 import { firstKickoff } from './extras.js'
 import { visiblePicks, weekRevealed } from './visibility.js'
+import { WEEK_ALL_FIXTURES, playable, playableFixtures } from './round.js'
+import { h2hRecord } from './h2h.js'
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value))
@@ -36,6 +38,8 @@ export function createStore({ demo = false, persist = false } = {}) {
     predictions: saved?.predictions || [],
     publishedPicks: saved?.publishedPicks || [],
     entries: saved?.entries || [],
+    weekAllFixtures: WEEK_ALL_FIXTURES.map((row) => ({ ...row })),
+    rivalries: saved?.rivalries || [],
   }
   const sessions = new Map(saved?.sessions || [])
   const listeners = new Set()
@@ -87,6 +91,7 @@ export function createStore({ demo = false, persist = false } = {}) {
           predictions: state.predictions,
           publishedPicks: state.publishedPicks,
           entries: state.entries,
+          rivalries: state.rivalries,
           sessions: [...sessions.entries()],
         }))
       } catch {
@@ -124,8 +129,8 @@ export function createStore({ demo = false, persist = false } = {}) {
   function payload(token) {
     const user = token ? userFromToken(token) : null
     return {
-      me: user ? publicUser(user) : null,
-      players: [...state.players].sort((a, b) => a.name.localeCompare(b.name)).map(publicUser),
+      me: user ? withRecord(user) : null,
+      players: [...state.players].sort((a, b) => a.name.localeCompare(b.name)).map(withRecord),
       fixtures: clone(state.fixtures),
       currentWeek: state.currentWeek,
       season: state.season,
@@ -160,6 +165,17 @@ export function createStore({ demo = false, persist = false } = {}) {
           fixtures: state.fixtures,
           entries: state.entries,
         })),
+      weekAllFixtures: state.weekAllFixtures.map((row) => ({ ...row })),
+      myRival: user
+        ? (state.rivalries.find((row) => row.userId === user.id && row.week === state.currentWeek)?.rivalId || '')
+        : '',
+    }
+  }
+
+  function withRecord(user) {
+    return {
+      ...publicUser(user),
+      h2h: h2hRecord(user.id, state.rivalries, state.fixtures, state.publishedPicks),
     }
   }
 
@@ -193,6 +209,22 @@ export function createStore({ demo = false, persist = false } = {}) {
       sessions.delete(token)
       emit()
     },
+    setRival(token, rivalId) {
+      const user = userFromToken(token)
+      const week = state.currentWeek
+      const deadline = firstKickoff(state.fixtures.filter((fixture) => fixture.week === week))
+      if (deadline && deadline <= new Date()) throw new Error('The deadline has passed')
+      if (state.entries.some((entry) => entry.userId === user.id && entry.week === week)) {
+        throw new Error('Rival is locked for this week')
+      }
+      const next = String(rivalId || '').trim()
+      if (next === user.id) throw new Error('Pick someone else')
+      if (next && !state.players.some((player) => player.id === next)) throw new Error('Player not found')
+      state.rivalries = state.rivalries.filter((row) => !(row.userId === user.id && row.week === week))
+      if (next) state.rivalries.push({ userId: user.id, week, rivalId: next })
+      emit()
+      return { ok: true }
+    },
     loadGame(token) {
       autoLock(state)
       return payload(token)
@@ -207,7 +239,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       if (deadline && deadline <= new Date()) throw new Error('The deadline has passed')
       const locked = state.entries.some((entry) => entry.userId === user.id && entry.week === fixture.week)
       if (locked) throw new Error('Predictions are locked for this week')
-      if (!fixture.hardest) throw new Error('That fixture is not in this week\'s round')
+      if (!playable(fixture, user.id, state.weekAllFixtures)) throw new Error('That fixture is not in this week\'s round')
       const parsed = parseScore(String(score || ''))
       if (!parsed) throw new Error('Enter a score like 2-1')
       const canonical = formatScore(parsed.home, parsed.away)
@@ -237,7 +269,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       if (state.entries.some((entry) => entry.userId === user.id && entry.week === week)) {
         throw new Error('Predictions are already locked')
       }
-      const required = requiredFixtures(state)
+      const required = playableFixtures(state.fixtures, user.id, week, state.weekAllFixtures)
       if (required.length === 0) throw new Error('There are no fixtures to lock')
       const missing = required.filter((fixture) => {
         const prediction = state.predictions.find((item) => item.userId === user.id && item.fixtureId === fixture.id)
@@ -353,7 +385,7 @@ export function createStore({ demo = false, persist = false } = {}) {
         locked: state.entries.some((entry) => entry.userId === userId && entry.week === week),
         predictions: state.predictions
           .filter((prediction) => prediction.userId === userId && prediction.week === week)
-          .filter((prediction) => state.fixtures.some((fixture) => fixture.id === prediction.fixtureId && fixture.hardest))
+          .filter((prediction) => state.fixtures.some((fixture) => fixture.id === prediction.fixtureId && playable(fixture, userId, state.weekAllFixtures)))
           .map((prediction) => ({
             fixtureId: prediction.fixtureId,
             score: prediction.score,
@@ -370,7 +402,7 @@ export function createStore({ demo = false, persist = false } = {}) {
       const already = state.entries.some((entry) => entry.userId === userId && entry.week === week)
       scores.forEach((item) => {
         const fixture = state.fixtures.find((candidate) => candidate.id === Number(item.fixtureId))
-        if (!fixture || fixture.week !== week || !fixture.hardest) {
+        if (!fixture || fixture.week !== week || !playable(fixture, userId, state.weekAllFixtures)) {
           throw new Error('That fixture is not in this week\'s round')
         }
         const parsed = parseScore(String(item.score || ''))
@@ -393,7 +425,7 @@ export function createStore({ demo = false, persist = false } = {}) {
           })
         }
       })
-      const required = requiredFixtures(state)
+      const required = playableFixtures(state.fixtures, userId, week, state.weekAllFixtures)
       if (lock && !already) {
         const missing = required.filter((fixture) => {
           const prediction = state.predictions.find((item) => item.userId === userId && item.fixtureId === fixture.id)
@@ -462,13 +494,13 @@ function autoLock(state, now = new Date()) {
     const userIds = new Set(
       state.predictions
         .filter((prediction) => !prediction.locked && prediction.week === week)
-        .filter((prediction) => state.fixtures.some((fixture) => fixture.id === prediction.fixtureId && fixture.hardest))
+        .filter((prediction) => state.fixtures.some((fixture) => fixture.id === prediction.fixtureId && playable(fixture, prediction.userId, state.weekAllFixtures)))
         .map((prediction) => prediction.userId),
     )
     userIds.forEach((userId) => {
       state.predictions.forEach((prediction) => {
         const fixture = state.fixtures.find((item) => item.id === prediction.fixtureId)
-        if (prediction.userId === userId && fixture?.week === week && fixture.hardest && !prediction.locked) {
+        if (prediction.userId === userId && fixture?.week === week && playable(fixture, userId, state.weekAllFixtures) && !prediction.locked) {
           prediction.locked = true
         }
       })
@@ -521,6 +553,10 @@ function calculateWeek(state, week, emit) {
   state.publishedPicks.forEach((pick) => {
     if (pick.week !== week) return
     const fixture = state.fixtures.find((item) => item.id === pick.fixtureId)
+    if (fixture && !playable(fixture, pick.userId, state.weekAllFixtures)) {
+      skipped += 1
+      return
+    }
     const settled = settlePick(
       pick,
       fixture ? fixture.actualHome : null,

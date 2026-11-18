@@ -55,3 +55,35 @@ export function canonicalTeam(name) {
 export function sameTeam(a, b) {
   return canonicalTeam(a) !== '' && canonicalTeam(a) === canonicalTeam(b)
 }
+
+const CODES = {
+  arsenal: 'ARS',
+  'aston villa': 'AVL',
+  bournemouth: 'BOU',
+  brentford: 'BRE',
+  brighton: 'BHA',
+  chelsea: 'CHE',
+  'coventry city': 'COV',
+  'crystal palace': 'CRY',
+  everton: 'EVE',
+  fulham: 'FUL',
+  'hull city': 'HUL',
+  'ipswich town': 'IPS',
+  'leeds united': 'LEE',
+  'leicester city': 'LEI',
+  liverpool: 'LIV',
+  'manchester city': 'MCI',
+  'manchester united': 'MUN',
+  'newcastle united': 'NEW',
+  'nottingham forest': 'NFO',
+  sunderland: 'SUN',
+  'tottenham hotspur': 'TOT',
+  'west ham united': 'WHU',
+  'wolverhampton wanderers': 'WOL',
+}
+
+export function teamCode(name) {
+  const key = canonicalTeam(name)
+  if (CODES[key]) return CODES[key]
+  return String(name || '').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() || '—'
+}

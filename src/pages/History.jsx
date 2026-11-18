@@ -27,7 +27,7 @@ export default function History() {
         </select>
       </label>
       {game.revealedWeeks == null || game.revealedWeeks.includes(week) ? (
-        <ResultsGrid fixtures={fixtures} players={game.players} publishedPicks={picks} entries={entries} />
+        <ResultsGrid fixtures={fixtures} players={game.players} publishedPicks={picks} entries={entries} weekAllFixtures={game.weekAllFixtures} week={week} />
       ) : (
         <PicksHidden />
       )}

@@ -118,6 +118,11 @@ export async function adminSavePlayerPredictions(token, userId, scores, lock) {
   })
 }
 
+export async function setRival(token, rivalId, week) {
+  if (mockMode) return callMock('setRival', [token, rivalId])
+  return rpc('set_rival', { p_token: token, p_rival_id: rivalId || '', p_week: week ?? null })
+}
+
 export async function arcadeTopScores() {
   if (mockMode) return callMock('topScores', [])
   const { data, error } = await supabase.rpc('arcade_top_scores')
